@@ -31,10 +31,19 @@ export default function Login() {
         await localStorage.setItem("refreshToken", data.data.refreshToken)
 
         const resData = await fetchProfile()
+          console.log(resData.data)
+          const currentUser = resData.data
 
-        setUser(resData.data)
-        console.log("loggin Success: ", resData.data)
-        navigate("/home")
+
+        setUser(currentUser)
+        console.log("loggin Success: ", currentUser)
+
+          if (currentUser.roles && currentUser.roles.includes("ADMIN")){
+              navigate("/admin/dashboard")
+          }else {
+              // Default fall-back is the Student Dashboard
+              navigate("/dashboard");
+          }
       }else {
         alert("Login failed, please check your credentials.")
       }
@@ -45,7 +54,7 @@ export default function Login() {
       alert("An error occurred during login. Please try again.")
     }
     setTimeout(() => setIsLoading(false), 2000)
-  };
+  }
 
   return (
     <div className="w-full max-w-[420px] mx-auto font-['Satoshi',_'Open_Sans',_sans-serif]">

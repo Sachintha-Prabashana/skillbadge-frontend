@@ -1,20 +1,32 @@
-import { lazy, Suspense, type ReactNode} from "react"
+import { lazy, Suspense} from "react"
 import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom"
 
-import { useAuth } from "../context/authContext"
+// import { useAuth } from "../context/authContext"
 
 import MarketingLayout from "../Layouts/MarketingLayout"
 import AuthLayout from "../Layouts/AuthLayout"
-import Home from "../pages/Home"
+import AdminLayout from "../Layouts/AdminLayout.tsx"
+import DashboardLayout from "../Layouts/DashboardLayout.tsx";
+
+
+
 
 const Index = lazy(() => import("../pages/Index"))
 const Login = lazy(() => import("../pages/Login"))
 const Register = lazy(() => import("../pages/Register"))
+const Challenge = lazy(() => import("../pages/admin/./ManageChallenges"))
+const Home = lazy(() => import("../pages/Home"))
 
+const AdminDashboard = lazy(() => import("../pages/admin/Dashboard"))
+const ManageUsers = lazy(() => import("../pages/admin/ManageUsers"))
+const Settings = lazy(() => import("../pages/admin/settings"))
+const CreateChallenge = lazy(() => import("../pages/admin/CreateChallenge"))
+const ChallengeSolver = lazy(() => import("../pages/ChallengeSolver"))
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
-  return (
+  // @ts-ignore
+    return (
     <BrowserRouter>
       <Suspense
         fallback={
@@ -33,8 +45,27 @@ export default function Router() {
              <Route path="/register" element={<Register />} />
           </Route>
 
-          {/* --- Dashboard Routes --- */}
-          <Route path="/home" element={<Home />} />
+          {/* --- Dashboard Routes  for Admin --- */}
+
+            <Route path="/admin" element={<AdminLayout />} >
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="challenge" element={<Challenge/>} />
+                <Route path="users" element={<ManageUsers />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="create-challenge" element={<CreateChallenge />} />
+
+            </Route>
+
+            <Route element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<Home />}></Route>
+
+            </Route>
+            {/* --- STANDALONE PAGE (No Sidebar) --- */}
+            {/* This matches the /challenges/:id link from the dashboard */}
+            <Route path="/challenges/:id" element={<ChallengeSolver />} />
+
+
+
 
         </Routes>
 

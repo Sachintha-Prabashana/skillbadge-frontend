@@ -21,3 +21,10 @@ export const refreshTokens = async (refreshToken: string) => {
   })
   return res.data
 }
+
+export const logout = async () => {
+    localStorage.removeItem("accessToken")
+    localStorage.removeItem("refreshToken")
+
+    window.location.href = "/login"
+}

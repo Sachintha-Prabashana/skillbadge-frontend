@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Github, Linkedin } from "lucide-react";
-import { register } from "../services/auth";
+import React, { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { Eye, EyeOff, Github, Linkedin } from "lucide-react"
+import { register } from "../services/auth"
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,11 +25,11 @@ export default function Register() {
   };
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+    e.preventDefault()
+    setIsLoading(true)
 
     // Now you can send 'formData' directly to your API!
-    console.log("Submitting:", formData);
+    console.log("Submitting:", formData)
     // Simulate API call
 
     try{
@@ -49,8 +49,8 @@ export default function Register() {
       console.log("Registration error: ", err)
       alert("An error occurred during registration. Please try again.")
     }
-    setTimeout(() => setIsLoading(false), 2000);
-  };
+    setTimeout(() => setIsLoading(false), 2000)
+  }
 
   return (
     <div className="w-full max-w-[420px] mx-auto font-['Satoshi',_'Open_Sans',_sans-serif]">
@@ -183,7 +183,7 @@ export default function Register() {
         <a href="#" className="text-indigo-600 hover:underline"> Privacy Policy</a>.
       </div>
     </div>
-  );
+  )
 }
 
 // Google Icon Component
@@ -207,5 +207,5 @@ function GoogleIcon({ className }: { className?: string }) {
         fill="#EA4335"
       />
     </svg>
-  );
+  )
 }

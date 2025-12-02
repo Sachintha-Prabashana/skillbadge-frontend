@@ -1,6 +1,6 @@
-import React from "react";
-import { Outlet, Link } from "react-router-dom";
-import { Code2, Terminal } from "lucide-react";
+import React from "react"
+import { Outlet, Link } from "react-router-dom"
+import { Code2, Terminal } from "lucide-react"
 
 export default function AuthLayout() {
   return (
@@ -64,5 +64,5 @@ export default function AuthLayout() {
       </div>
 
     </div>
-  );
+  )
 }
