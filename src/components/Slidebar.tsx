@@ -2,25 +2,49 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
     LayoutDashboard,
-    Code2,
-    Database,
-    FileCode,
+    Terminal,
+    Trophy,
+    BookOpen,
+    MessageSquare,
+    Briefcase,
     Settings,
     LogOut,
-    Terminal, Zap
-} from "lucide-react";
-import {logout} from "../services/auth.ts";
-import { useAuth } from "../context/authContext.tsx";
+    List,
+    Layers,
+    Zap
+} from "lucide-react"; // Import new icons
+import { logout } from "../services/auth"; // Ensure extension is correct (.ts/.tsx)
+import { useAuth } from "../context/authContext";
 
-export default function Slidebar() {
+export default function Sidebar() {
     const location = useLocation();
-    const { user } = useAuth()
+    const { user } = useAuth();
 
-    const menuItems = [
-        { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-        { icon: Code2, label: "Algorithms", path: "/algorithms" },
-        { icon: Database, label: "Data Structures", path: "/data-structures" },
-        { icon: FileCode, label: "SQL", path: "/sql" },
+    // Industry Standard: Grouped Navigation
+    const navSections = [
+        {
+            title: "MENU",
+            items: [
+                { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+                { icon: List, label: "All Problems", path: "/challenges" }, // Combined Algo/DS/SQL here
+                { icon: Layers, label: "Study Plans", path: "/learn" },
+            ]
+        },
+        {
+            title: "COMMUNITY",
+            items: [
+                { icon: Trophy, label: "Contests", path: "/contests" },
+                { icon: MessageSquare, label: "Discuss", path: "/discuss" },
+                { icon: Zap, label: "Leaderboard", path: "/leaderboard" },
+            ]
+        },
+        {
+            title: "CAREER",
+            items: [
+                { icon: Briefcase, label: "Companies", path: "/companies" },
+                { icon: BookOpen, label: "Interview Prep", path: "/interview-prep" },
+            ]
+        }
     ];
 
     return (
@@ -36,66 +60,69 @@ export default function Slidebar() {
                 </div>
             </div>
 
-            {/* --- USER PROFILE (Lightweight Data) --- */}
+            {/* --- USER PROFILE --- */}
             <div className="p-6 border-b border-[#27272a] flex items-center gap-3">
-                <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border-2 border-slate-600">
-                        {/* 1. Try Avatar URL */}
-                        {user?.avatarUrl ? (
-                            <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
-                        ) : (
-                            /* 2. Fallback to Initials (No API call needed) */
-                            <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
-                                {user?.firstname?.charAt(0)}{user?.lastname?.charAt(0)}
-                            </div>
-                        )}
-                    </div>
+                <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border-2 border-slate-600 shrink-0">
+                    {user?.avatarUrl ? (
+                        <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs bg-gradient-to-br from-indigo-500 to-purple-500">
+                            {user?.firstname?.charAt(0)}{user?.lastname?.charAt(0)}
+                        </div>
+                    )}
                 </div>
-                <div>
-                    <h3 className="font-bold text-sm text-white">
+                <div className="overflow-hidden">
+                    <h3 className="font-bold text-sm text-white truncate">
                         {user?.firstname} {user?.lastname}
                     </h3>
-
-                    <div className="flex items-center gap-1 text-xs text-purple-400 font-medium">
-                        <Zap className="w-3 h-3" />
+                    <div className="flex items-center gap-1 text-xs text-amber-500 font-medium">
+                        <Zap className="w-3 h-3 fill-amber-500" />
                         <span>{user?.points || 0} XP</span>
-
                     </div>
                 </div>
             </div>
 
+            {/* --- SCROLLABLE NAVIGATION --- */}
+            <div className="flex-1 overflow-y-auto py-4 px-4 custom-scrollbar">
+                {navSections.map((section, index) => (
+                    <div key={index} className="mb-6">
+                        {/* Section Title */}
+                        <h4 className="text-xs font-bold text-slate-500 mb-2 px-4 uppercase tracking-wider">
+                            {section.title}
+                        </h4>
 
+                        {/* Links */}
+                        <div className="space-y-0.5">
+                            {section.items.map((item) => {
+                                const isActive = location.pathname.startsWith(item.path);
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={item.path}
+                                        className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                            isActive
+                                                ? "bg-amber-500/10 text-amber-500"
+                                                : "text-slate-400 hover:text-white hover:bg-[#1e1e1e]"
+                                        }`}
+                                    >
+                                        <item.icon className={`w-4 h-4 ${isActive ? "text-amber-500" : "text-slate-500 group-hover:text-white"}`} />
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ))}
+            </div>
 
-            {/* --- NAVIGATION --- */}
-            <nav className="flex-1 px-4 space-y-1">
-                {menuItems.map((item) => {
-                    const isActive = location.pathname.startsWith(item.path);
-                    return (
-                        <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
-                                isActive
-                                    ? "bg-amber-500/10 text-amber-500 border border-amber-500/20"
-                                    : "text-slate-400 hover:text-white hover:bg-[#1a1a1a]"
-                            }`}
-                        >
-                            <item.icon className={`w-5 h-5 ${isActive ? "text-amber-500" : "text-slate-500"}`} />
-                            {item.label}
-                        </Link>
-                    );
-                })}
-            </nav>
-
-            {/* --- BOTTOM --- */}
+            {/* --- BOTTOM ACTIONS --- */}
             <div className="p-4 border-t border-[#2a2a2a] space-y-1">
                 <button className="flex items-center gap-3 px-4 py-3 w-full text-slate-400 hover:text-white hover:bg-[#1a1a1a] rounded-lg transition-all text-sm font-medium">
                     <Settings className="w-5 h-5" /> Settings
                 </button>
 
-                {/* UPDATE THIS BUTTON */}
                 <button
-                    onClick={logout} // <--- Attach the handler here
+                    onClick={logout}
                     className="flex items-center gap-3 px-4 py-3 w-full text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all text-sm font-medium"
                 >
                     <LogOut className="w-5 h-5" /> Logout

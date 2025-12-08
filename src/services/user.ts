@@ -16,12 +16,37 @@ export interface LeaderboardUser {
     badges: Badge[]
 }
 
+// 1. Define the Shape of the Data
+export interface UserProfileData {
+    username: string;
+    rank: number;
+    avatarUrl?: string;
+    solved: {
+        total: number;
+        totalQuestions: number;
+        easy: number;
+        medium: number;
+        hard: number;
+        totalEasy: number;
+        totalMedium: number;
+        totalHard: number;
+    };
+    languages: { name: string; problems: number }[];
+    submissionCalendar: Record<string, number>; // { "2023-10-25": 5 }
+    badges: any[];
+    recentActivity: {
+        title: string;
+        time: string;
+        status: "ACCEPTED" | "WRONG_ANSWER" | "COMPILE_ERROR";
+    }[];
+}
+
 export const fetchLeaderboard = async (): Promise<LeaderboardUser[]> => {
     const response = await api.get("/users/leaderboard")
     return response.data
 }
 
-export const fetchUsersProfile = async(id: string = "me")=> {
+export const fetchUsersProfile = async(id: string = "me"): Promise<UserProfileData>=> {
     const response = await api.get(`/users/profile/${id}`)
     return response.data
 }

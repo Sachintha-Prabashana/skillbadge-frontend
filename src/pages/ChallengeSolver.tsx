@@ -178,9 +178,13 @@ export default function ChallengeSolver() {
                                         onChange={(e) => handleLanguageChange(e.target.value)}
                                         className="bg-[#3e3e3e] text-xs text-slate-200 hover:text-white px-2 py-1 rounded border-none outline-none cursor-pointer appearance-none pr-6"
                                     >
-                                        <option value="python">Python</option>
-                                        <option value="javascript">JavaScript</option>
-                                        <option value="java">Java</option>
+                                        {/*<option value="python">Python</option>*/}
+                                        {/*<option value="javascript">JavaScript</option>*/}
+                                        {/*<option value="java">Java</option>*/}
+
+                                        {challenge.allowedLanguages.map((lang: string) => (
+                                            <option key={lang} value={lang.toLowerCase()}>{lang}</option>
+                                        ))}
                                     </select>
                                     <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400" />
                                 </div>
