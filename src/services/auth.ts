@@ -28,3 +28,18 @@ export const logout = async () => {
 
     window.location.href = "/login"
 }
+
+export const initiateGoogleLogin = () => {
+    // Use the env variable so it works in Production too
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+    // Redirect browser
+    window.location.href = `${API_URL}/api/v1/auth/google`;
+}
+
+// Add this:
+export const initiateGithubLogin = () => {
+    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+    // Point to the route we created in Step 5
+    window.location.href = `${API_URL}/api/v1/auth/github`;
+}

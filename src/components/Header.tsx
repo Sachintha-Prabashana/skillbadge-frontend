@@ -1,8 +1,11 @@
-import React from "react"
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Search, Bell } from "lucide-react";
+import {useAuth} from "../context/authContext.tsx";
 
 export default function Header() {
+    const location = useLocation();
+    const { user } = useAuth()
+
     return (
         <header className="h-16 bg-[#121212] border-b border-[#2a2a2a] flex items-center justify-between px-8 sticky top-0 z-10 font-['Satoshi',_sans-serif]">
 
@@ -18,11 +21,18 @@ export default function Header() {
 
             {/* Center Links */}
             <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-400">
-                <Link to="#" className="hover:text-white transition-colors">Challenges</Link>
+                <Link to="/dashboard" className="hover:text-white transition-colors">Challenges</Link>
                 <Link to="#" className="hover:text-white transition-colors">Contests</Link>
                 <Link to="#" className="hover:text-white transition-colors">Practice</Link>
                 <Link to="#" className="hover:text-white transition-colors">Community</Link>
-                <Link to="#" className="hover:text-white transition-colors">Leaderboard</Link>
+
+                {/* Active State Logic */}
+                <Link
+                    to="/leaderboard"
+                    className={`transition-colors ${location.pathname === '/leaderboard' ? 'text-amber-500 font-bold' : 'hover:text-white'}`}
+                >
+                    Leaderboard
+                </Link>
             </nav>
 
             {/* Right Icons */}
@@ -31,10 +41,29 @@ export default function Header() {
                     <Bell className="w-5 h-5" />
                     <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full border border-[#121212]"></span>
                 </button>
-                <div className="w-8 h-8 rounded-full bg-slate-700 overflow-hidden border border-slate-600">
-                    <img src="https://i.pravatar.cc/150?u=alex" alt="User" />
-                </div>
+
+                {/* --- AVATAR LOGIC --- */}
+                <Link
+                    to="/profile/me"
+                    className="w-8 h-8 rounded-full bg-slate-700 border border-slate-600 hover:border-amber-500 transition-colors overflow-hidden flex items-center justify-center"
+                >
+                    {/* Check if user exists AND has an avatar URL */}
+                    {user?.avatarUrl ? (
+                        <img
+                            src={user.avatarUrl}
+                            alt="User"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <span className="text-xs font-bold text-slate-300 uppercase">
+                            {/* Fallback: First letter of Name or 'U' */}
+                            {user?.firstname?.charAt(0) || "U"}
+                            {user?.lastname?.charAt(0)}
+                        </span>
+                    )}
+                </Link>
             </div>
+
         </header>
     );
 }

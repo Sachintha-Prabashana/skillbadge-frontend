@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { useParams, Link } from "react-router-dom"
 import {
     ChevronLeft, Settings, RotateCcw, Play, CloudUpload,
     ChevronDown, CheckCircle2, Loader2, XCircle, Code2,
@@ -7,6 +9,7 @@ import {
 } from "lucide-react";
 import {fetchChallengeById, runChallengeCode} from "../services/challenge.ts";
 import CodeEditor from "../components/CodeEditor.tsx";
+import SuccessModal from "../components/SuccessModal.tsx";
 
 
 export default function ChallengeSolver() {
@@ -25,6 +28,7 @@ export default function ChallengeSolver() {
     // --- Execution Result States ---
     const [testResults, setTestResults] = useState<any[]>([]);
     const [overallStatus, setOverallStatus] = useState<string>("");
+    const [showSuccess, setShowSuccess] = useState(false);
 
     // --- 1. Load Challenge Data ---
     useEffect(() => {
@@ -67,6 +71,10 @@ export default function ChallengeSolver() {
             });
             setTestResults(response.results);
             setOverallStatus(response.status);
+
+            if (response.status === "PASSED") {
+                setShowSuccess(true)
+            }
         } catch (error) {
             setOverallStatus("ERROR");
         } finally {
@@ -133,9 +141,25 @@ export default function ChallengeSolver() {
                             </span>
                         </div>
 
-                        {/* Description Text */}
-                        <div className="text-sm text-slate-300 leading-relaxed space-y-4 whitespace-pre-wrap font-sans">
-                            {challenge.description}
+                        {/* MARKDOWN RENDERER */}
+                        <div className="text-sm text-slate-300 leading-relaxed space-y-4">
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={{
+                                    h3: ({node, ...props}) => <h3 className="text-white font-bold mt-4 mb-2" {...props} />,
+                                    code: ({node, className, children, ...props}: any) => (
+                                        <code className="bg-[#3e3e3e] px-1 py-0.5 rounded text-slate-200 font-mono text-xs" {...props}>{children}</code>
+                                    ),
+                                    pre: ({node, ...props}) => (
+                                        <div className="bg-[#1a1a1a] p-3 rounded-lg border border-[#3e3e3e] my-3 overflow-x-auto">
+                                            <pre className="text-xs text-slate-300 font-mono" {...props} />
+                                        </div>
+                                    ),
+                                    ul: ({node, ...props}) => <ul className="list-disc pl-5 space-y-1" {...props} />
+                                }}
+                            >
+                                {challenge.description}
+                            </ReactMarkdown>
                         </div>
                     </div>
                 </div>
@@ -267,6 +291,14 @@ export default function ChallengeSolver() {
                                 <CloudUpload className="w-3 h-3 inline mr-1" /> Submit
                             </button>
                         </div>
+
+                        {/* === 3. SUCCESS MODAL === */}
+                        {showSuccess && (
+                            <SuccessModal
+                                onClose={() => setShowSuccess(false)}
+                                points={challenge.points || 10}
+                            />
+                        )}
                     </div>
 
                 </div>

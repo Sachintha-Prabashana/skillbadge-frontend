@@ -6,9 +6,9 @@ import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom"
 import MarketingLayout from "../Layouts/MarketingLayout"
 import AuthLayout from "../Layouts/AuthLayout"
 import AdminLayout from "../Layouts/AdminLayout.tsx"
-import DashboardLayout from "../Layouts/DashboardLayout.tsx";
-
-
+import DashboardLayout from "../Layouts/DashboardLayout.tsx"
+import Leaderboard from "../pages/Leaderboard.tsx"
+import Profile from "../pages/Profile.tsx"
 
 
 const Index = lazy(() => import("../pages/Index"))
@@ -22,6 +22,7 @@ const ManageUsers = lazy(() => import("../pages/admin/ManageUsers"))
 const Settings = lazy(() => import("../pages/admin/settings"))
 const CreateChallenge = lazy(() => import("../pages/admin/CreateChallenge"))
 const ChallengeSolver = lazy(() => import("../pages/ChallengeSolver"))
+const AuthSuccess = lazy(() => import("../pages/AuthSuccess"))
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
@@ -58,11 +59,17 @@ export default function Router() {
 
             <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<Home />}></Route>
+                <Route path="/leaderboard" element={<Leaderboard />} />
+
+                {/* Matches /profile (me) AND /profile/123 (others) */}
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/:id" element={<Profile />} />
 
             </Route>
             {/* --- STANDALONE PAGE (No Sidebar) --- */}
             {/* This matches the /challenges/:id link from the dashboard */}
             <Route path="/challenges/:id" element={<ChallengeSolver />} />
+            <Route path="/auth-success" element={<AuthSuccess />} />
 
 
 

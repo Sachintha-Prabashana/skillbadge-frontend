@@ -7,12 +7,14 @@ import {
     FileCode,
     Settings,
     LogOut,
-    Terminal
+    Terminal, Zap
 } from "lucide-react";
 import {logout} from "../services/auth.ts";
+import { useAuth } from "../context/authContext.tsx";
 
 export default function Slidebar() {
     const location = useLocation();
+    const { user } = useAuth()
 
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -34,18 +36,35 @@ export default function Slidebar() {
                 </div>
             </div>
 
-            {/* --- PROFILE SNIPPET --- */}
-            <div className="px-4 mb-6">
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-[#2a2a2a] bg-[#1a1a1a]">
-                    <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-600">
-                        <img src="https://i.pravatar.cc/150?u=alex" alt="User" className="w-full h-full object-cover" />
+            {/* --- USER PROFILE (Lightweight Data) --- */}
+            <div className="p-6 border-b border-[#27272a] flex items-center gap-3">
+                <div className="relative">
+                    <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border-2 border-slate-600">
+                        {/* 1. Try Avatar URL */}
+                        {user?.avatarUrl ? (
+                            <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
+                        ) : (
+                            /* 2. Fallback to Initials (No API call needed) */
+                            <div className="w-full h-full flex items-center justify-center text-white font-bold text-xs">
+                                {user?.firstname?.charAt(0)}{user?.lastname?.charAt(0)}
+                            </div>
+                        )}
                     </div>
-                    <div>
-                        <h3 className="font-bold text-sm text-white">Alex Chen</h3>
-                        <p className="text-xs text-slate-400">Level 5 Coder</p>
+                </div>
+                <div>
+                    <h3 className="font-bold text-sm text-white">
+                        {user?.firstname} {user?.lastname}
+                    </h3>
+
+                    <div className="flex items-center gap-1 text-xs text-purple-400 font-medium">
+                        <Zap className="w-3 h-3" />
+                        <span>{user?.points || 0} XP</span>
+
                     </div>
                 </div>
             </div>
+
+
 
             {/* --- NAVIGATION --- */}
             <nav className="flex-1 px-4 space-y-1">
