@@ -3,8 +3,28 @@ import { fetchProfile } from "../services/auth"
 
 const AuthContext = createContext<any>(null)
 
+export interface User {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    points: number;
+    avatarUrl?: string;
+    roles?: string[];
+    // Add other fields as needed based on your Mongoose Schema
+}
+
+// 2. Define the Context Type
+interface AuthContextType {
+    user: User | null;
+    loading: boolean;
+    refreshUser: () => Promise<void>;
+    updateUser: (updates: Partial<User>) => void; // <--- NEW: For optimistic updates
+    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+}
+
 export const AuthProvider = ( { children }: any ) => {
-    const [ user, setUser ] = useState<any>(null)
+    const [ user, setUser ] = useState<User | any>(null)
     const [ loading, setLoading ] = useState(true)
 
     // 2. The Fetch Logic (Reusable)
@@ -40,8 +60,17 @@ export const AuthProvider = ( { children }: any ) => {
         await loadUserData(); // Re-runs the fetch to update Avatar/Points
     };
 
+    // 2. updateUser: Updates state IMMEDIATELY (Fast, for Optimistic UI)
+    // Usage: updateUser({ points: 50 }) -> Updates only points, keeps name/email etc.
+    const updateUser = (updates: Partial<User>) => {
+        setUser((prev: any) => {
+            if (!prev) return null;
+            return { ...prev, ...updates };
+        });
+    };
+
     return (
-        <AuthContext.Provider value={{ user, setUser, loading, refreshUser }}>
+        <AuthContext.Provider value={{ user, setUser, loading, refreshUser, updateUser }}>
         {children}
         </AuthContext.Provider>
     )

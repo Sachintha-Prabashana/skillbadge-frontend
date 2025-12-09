@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import { useAuth } from "../context/authContext.tsx";
 import { useParams, Link } from "react-router-dom"
 import {
     ChevronLeft, Settings, RotateCcw, Play, CloudUpload,
@@ -10,6 +11,8 @@ import {
 import {fetchChallengeById, runChallengeCode} from "../services/challenge.ts";
 import CodeEditor from "../components/CodeEditor.tsx";
 import SuccessModal from "../components/SuccessModal.tsx";
+import SolverHeader from "../components/SolverHeader.tsx";
+import AiAssistant from "../components/AiAssistant.tsx";
 
 
 export default function ChallengeSolver() {
@@ -29,6 +32,9 @@ export default function ChallengeSolver() {
     const [testResults, setTestResults] = useState<any[]>([]);
     const [overallStatus, setOverallStatus] = useState<string>("");
     const [showSuccess, setShowSuccess] = useState(false);
+
+    const [isAiOpen, setIsAiOpen] = useState(false);
+    const { user, updateUser } = useAuth(); // <--- ADD THIS
 
     // --- 1. Load Challenge Data ---
     useEffect(() => {
@@ -74,6 +80,16 @@ export default function ChallengeSolver() {
 
             if (response.status === "PASSED") {
                 setShowSuccess(true)
+
+                // --- UPDATE AUTH CONTEXT HERE ---
+                if (user) {
+                    const earnedPoints = challenge.points || 10; // Default to 10 if undefined
+
+                    // Optimistically update the UI immediately
+                    updateUser({
+                        points: user.points + earnedPoints
+                    });
+                }
             }
         } catch (error) {
             setOverallStatus("ERROR");
@@ -82,36 +98,63 @@ export default function ChallengeSolver() {
         }
     };
 
+    // const toggleAi = () => {
+    //     // Logic to open AI Sidebar/Modal
+    //     setIsAiOpen(!isAiOpen);
+    // };
+
     if (loading) return <div className="h-screen bg-[#1a1a1a] flex items-center justify-center text-slate-500">Loading Problem...</div>;
     if (!challenge) return <div className="h-screen bg-[#1a1a1a] flex items-center justify-center text-red-500">Problem not found.</div>;
 
     return (
-        <div className="flex flex-col h-screen bg-[#1a1a1a] text-white font-sans overflow-hidden">
+        <div className="flex flex-col h-screen bg-[#1a1a1a] text-white font-sans overflow-hidden relative">
 
             {/* === 1. TOP NAVBAR === */}
-            <header className="h-12 bg-[#282828] border-b border-[#3e3e3e] flex items-center justify-between px-4 shrink-0">
-                <div className="flex items-center gap-4">
-                    <Link to="/dashboard" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">
-                        <div className="bg-[#1a1a1a] p-1 rounded">
-                            <Code2 className="w-4 h-4 text-white" />
-                        </div>
-                    </Link>
-                    <div className="h-4 w-px bg-[#3e3e3e] mx-2"></div>
-                    <div className="flex items-center gap-2 text-sm text-slate-300 hover:text-white cursor-pointer transition-colors">
-                        <List className="w-4 h-4" />
-                        <span>Problem List</span>
-                    </div>
-                </div>
+            {/*<header className="h-12 bg-[#282828] border-b border-[#3e3e3e] flex items-center justify-between px-4 shrink-0">*/}
+            {/*    <div className="flex items-center gap-4">*/}
+            {/*        <Link to="/dashboard" className="flex items-center gap-2 text-slate-300 hover:text-white transition-colors">*/}
+            {/*            <div className="bg-[#1a1a1a] p-1 rounded">*/}
+            {/*                <Code2 className="w-4 h-4 text-white" />*/}
+            {/*            </div>*/}
+            {/*        </Link>*/}
+            {/*        <div className="h-4 w-px bg-[#3e3e3e] mx-2"></div>*/}
+            {/*        <div className="flex items-center gap-2 text-sm text-slate-300 hover:text-white cursor-pointer transition-colors">*/}
+            {/*            <List className="w-4 h-4" />*/}
+            {/*            <span>Problem List</span>*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
 
-                <div className="flex items-center gap-3">
-                    <button className="p-1.5 text-slate-400 hover:bg-[#3e3e3e] rounded transition-colors">
-                        <Settings className="w-4 h-4" />
-                    </button>
-                    <div className="w-7 h-7 rounded-full bg-slate-700 border border-slate-600 overflow-hidden flex items-center justify-center text-xs">
-                        U
-                    </div>
-                </div>
-            </header>
+            {/*    <div className="flex items-center gap-3">*/}
+            {/*        <button className="p-1.5 text-slate-400 hover:bg-[#3e3e3e] rounded transition-colors">*/}
+            {/*            <Settings className="w-4 h-4" />*/}
+            {/*        </button>*/}
+            {/*        <div className="w-7 h-7 rounded-full bg-slate-700 border border-slate-600 overflow-hidden flex items-center justify-center text-xs">*/}
+            {/*            U*/}
+            {/*        </div>*/}
+            {/*    </div>*/}
+            {/*</header>*/}
+
+            <SolverHeader
+                title={challenge?.title}
+                onAiClick={() => setIsAiOpen(!isAiOpen)} // Toggle Logic
+            />
+
+            {/*{isAiOpen && (*/}
+            {/*    <div className="absolute top-14 right-4 w-80 h-[500px] bg-[#222] border border-[#3e3e3e] rounded-xl shadow-2xl z-50 p-4">*/}
+            {/*        <h3 className="text-white font-bold mb-2">AI Assistant</h3>*/}
+            {/*        <p className="text-slate-400 text-sm">How can I help you optimize this solution?</p>*/}
+            {/*    </div>*/}
+            {/*)}*/}
+
+            {/* === AI SLIDE-OUT PANEL === */}
+            {/* This sits ON TOP of the split view */}
+            <AiAssistant
+                isOpen={isAiOpen}
+                onClose={() => setIsAiOpen(false)}
+                challengeId={id || ""}
+                code={code}
+                language={language}
+            />
 
             {/* === 2. MAIN SPLIT VIEW === */}
             <div className="flex-1 flex overflow-hidden p-2 gap-2 bg-[#1a1a1a]">

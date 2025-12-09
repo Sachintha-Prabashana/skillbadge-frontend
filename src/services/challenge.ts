@@ -37,3 +37,12 @@ export const runChallengeCode = async (data: {
     return response.data
 
 }
+
+export const getChallengeHint = async (challengeId: string, code: string, language: string) => {
+    const response = await api.post(`/challenges/${challengeId}/hint`,
+        {
+            code, language
+        })
+
+    return response.data // hint, remainingPoints, message
+}
