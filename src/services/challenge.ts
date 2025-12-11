@@ -44,5 +44,5 @@ export const getChallengeHint = async (challengeId: string, code: string, langua
             code, language
         })
 
-    return response.data // hint, remainingPoints, message
+    return response.data // hint, remainingPoints, hint_cost, message
 }

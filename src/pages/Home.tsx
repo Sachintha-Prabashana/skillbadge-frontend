@@ -13,6 +13,7 @@ import {
     Loader2, ChevronLeft, ChevronRight // Added Loader icon
 } from "lucide-react";
 import { type Challenge, fetchChallenges } from "../services/challenge.ts";
+import DashboardFeatureCards from "../components/DashboardFeatureCards.tsx";
 
 export default function Home() {
     const [challenges, setChallenges] = useState<Challenge[]>([])
@@ -50,13 +51,15 @@ export default function Home() {
             <div className="xl:col-span-3 space-y-6">
 
                 {/* 1. Feature Cards */}
-                <div className="grid grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="aspect-video bg-[#1a1a1a] rounded-xl flex items-center justify-center border border-[#2a2a2a] hover:border-slate-500 transition-colors cursor-pointer group">
-                            <ImageIcon className="w-8 h-8 text-slate-600 group-hover:text-white transition-colors" />
-                        </div>
-                    ))}
-                </div>
+                {/*<div className="grid grid-cols-4 gap-4">*/}
+                {/*    {[1, 2, 3, 4].map((i) => (*/}
+                {/*        <div key={i} className="aspect-video bg-[#1a1a1a] rounded-xl flex items-center justify-center border border-[#2a2a2a] hover:border-slate-500 transition-colors cursor-pointer group">*/}
+                {/*            <ImageIcon className="w-8 h-8 text-slate-600 group-hover:text-white transition-colors" />*/}
+                {/*        </div>*/}
+                {/*    ))}*/}
+                {/*</div>*/}
+
+                <DashboardFeatureCards />
 
                 {/* 2. Topic Stats */}
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500 font-medium">

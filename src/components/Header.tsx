@@ -85,10 +85,14 @@ export default function Header() {
                     {isDropdownOpen && (
                         <div className="absolute right-0 mt-3 w-64 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
 
-                            {/* 1. Header: Avatar & Name */}
-                            <div className="p-4 border-b border-[#2a2a2a] bg-[#222]">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border border-slate-600">
+                            {/* 1. Header: Avatar & Name - NOW CLICKABLE */}
+                            <div className="border-b border-[#2a2a2a] bg-[#222]">
+                                <Link
+                                    to="/profile/me"
+                                    onClick={() => setIsDropdownOpen(false)} // Close dropdown on click
+                                    className="flex items-center gap-3 p-4 hover:bg-[#2a2a2a] transition-colors cursor-pointer"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-slate-700 overflow-hidden border border-slate-600 shrink-0">
                                         {user?.avatarUrl ? (
                                             <img src={user.avatarUrl} alt="User" className="w-full h-full object-cover" />
                                         ) : (
@@ -98,12 +102,15 @@ export default function Header() {
                                         )}
                                     </div>
                                     <div className="overflow-hidden">
-                                        <h4 className="text-white font-bold text-sm truncate">{user?.firstname} {user?.lastname}</h4>
-                                        <p className="text-slate-500 text-xs truncate">@{user?.firstname?.toLowerCase()}{user?.lastname?.toLowerCase()}</p>
+                                        <h4 className="text-white font-bold text-sm truncate">
+                                            {user?.firstname} {user?.lastname}
+                                        </h4>
+                                        <p className="text-slate-500 text-xs truncate">
+                                            @{user?.firstname?.toLowerCase()}{user?.lastname?.toLowerCase()}
+                                        </p>
                                     </div>
-                                </div>
+                                </Link>
                             </div>
-
                             {/* 2. Menu Items */}
                             <div className="p-2 space-y-1">
                                 <Link
@@ -125,7 +132,7 @@ export default function Header() {
                                 </Link>
 
                                 <Link
-                                    to="/profile/me" // Or create a /settings page
+                                    to="/profile/me/settings"
                                     onClick={() => setIsDropdownOpen(false)}
                                     className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:text-white hover:bg-[#2a2a2a] rounded-lg transition-colors"
                                 >

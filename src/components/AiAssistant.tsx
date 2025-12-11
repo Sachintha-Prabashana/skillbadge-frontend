@@ -35,9 +35,10 @@ export default function AiAssistant({ isOpen, onClose, challengeId, code, langua
     const XP_COST = 5;
 
     const handleAskHint = async () => {
-
         // 1. Validation
         if (!user) return;
+
+        // Safety check: Ensure we don't go negative
         if (user.points < XP_COST) {
             setMessages(prev => [...prev, { role: "ai", content: "You don't have enough XP for a hint!" }]);
             return;
@@ -45,35 +46,41 @@ export default function AiAssistant({ isOpen, onClose, challengeId, code, langua
 
         setLoading(true);
 
-        // 2. SNAPSHOT (Save current points)
+        // 2. SNAPSHOT (Save current points for rollback)
         const previousPoints = user.points;
 
-        // 3. OPTIMISTIC UPDATE (Global)
-        // This updates the Context immediately -> Header updates instantly
+        // 3. OPTIMISTIC UPDATE (Fast UX)
+        // Instantly subtract points in the UI so the user sees the change immediately
         updateUser({ points: user.points - XP_COST });
 
-
-        // Add user request to UI
-        const newMessages = [...messages, { role: "user", content: "Can you give me a hint based on my code?" } as Message];
-        setMessages(newMessages);
+        // Add user message to chat immediately
+        setMessages(prev => [...prev, { role: "user", content: "Can you give me a hint based on my code?" } as Message]);
 
         try {
+            // 4. API CALL
+            // Ensure your getChallengeHint service returns { hint, remainingPoints, cost }
             const data = await getChallengeHint(challengeId, code, language);
+
+            // 5. AUTHORITATIVE SYNC (The Fix)
+            // Overwrite our "guess" with the actual remaining points from the database.
+            // This ensures the frontend is 100% in sync with the server.
+            if (data.remainingPoints !== undefined) {
+                updateUser({ points: data.remainingPoints });
+            }
 
             // Add AI response
             setMessages(prev => [...prev, { role: "ai", content: data.hint }]);
 
-            // Optional: If backend returns the exact remaining points, sync it here
-            // if (data.remainingPoints) {
-            //     setUser(prev => prev ? { ...prev, points: data.remainingPoints } : null);
-            // }
         } catch (error: any) {
-            // 5. ROLLBACK (If API fails, give points back globally)
+            console.error("Hint failed:", error);
+
+            // 6. ROLLBACK (Critical)
+            // If the server failed (e.g. 500 error), give the points back!
             updateUser({ points: previousPoints });
 
             setMessages(prev => [...prev, {
                 role: "ai",
-                content: error.response?.data?.message || "Sorry, I couldn't reach the server."
+                content: error.response?.data?.message || "Sorry, I couldn't reach the server. Points refunded."
             }]);
         } finally {
             setLoading(false);

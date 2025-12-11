@@ -7,6 +7,7 @@ import ProgressSection from "../components/ProgressSection.tsx";
 import BadgesSection from "../components/BadgesSection.tsx";
 import HeatmapSection from "../components/HeatmapSection.tsx";
 import RecentActivitySection from "../components/RecentActivitySection.tsx";
+import EducationSection from "../components/EducationSection.tsx";
 
 export default function Profile() {
     const { id } = useParams();
@@ -49,6 +50,12 @@ export default function Profile() {
                         rank={data.rank}
                         avatarUrl={data.avatarUrl}
                         languages={data.languages}
+
+                        // NEW PROPS
+                        title={data.title}
+                        about={data.about}
+                        country={data.country}
+                        socials={data.socials}
                         // 3. PASS THE RELOAD FUNCTION HERE
                         onProfileUpdate={loadData}
                     />
@@ -65,6 +72,8 @@ export default function Profile() {
 
                     {/* Row 2: Heatmap */}
                     <HeatmapSection calendar={data.submissionCalendar} />
+
+                    <EducationSection education={data.education} />
 
                     {/* Row 3: Recent Activity */}
                     <RecentActivitySection activities={data.recentActivity} />

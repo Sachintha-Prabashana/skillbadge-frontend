@@ -23,6 +23,7 @@ const Settings = lazy(() => import("../pages/admin/settings"))
 const CreateChallenge = lazy(() => import("../pages/admin/CreateChallenge"))
 const ChallengeSolver = lazy(() => import("../pages/ChallengeSolver"))
 const AuthSuccess = lazy(() => import("../pages/AuthSuccess"))
+const ProfileSettings = lazy(() => import("../pages/ProfileSettings.tsx"))
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
@@ -64,6 +65,8 @@ export default function Router() {
                 {/* Matches /profile (me) AND /profile/123 (others) */}
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:id" element={<Profile />} />
+                <Route path="/profile/me/settings" element={<ProfileSettings />} />
+
 
             </Route>
             {/* --- STANDALONE PAGE (No Sidebar) --- */}
@@ -71,13 +74,8 @@ export default function Router() {
             <Route path="/challenges/:id" element={<ChallengeSolver />} />
             <Route path="/auth-success" element={<AuthSuccess />} />
 
-
-
-
         </Routes>
-
       </Suspense>
-    
     </BrowserRouter>
      
   )

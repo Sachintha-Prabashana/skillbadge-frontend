@@ -38,13 +38,13 @@ export default function Sidebar() {
                 { icon: Zap, label: "Leaderboard", path: "/leaderboard" },
             ]
         },
-        {
-            title: "CAREER",
-            items: [
-                { icon: Briefcase, label: "Companies", path: "/companies" },
-                { icon: BookOpen, label: "Interview Prep", path: "/interview-prep" },
-            ]
-        }
+        // {
+        //     title: "CAREER",
+        //     items: [
+        //         { icon: Briefcase, label: "Companies", path: "/companies" },
+        //         { icon: BookOpen, label: "Interview Prep", path: "/interview-prep" },
+        //     ]
+        // }
     ];
 
     return (

@@ -31,13 +31,30 @@ export interface UserProfileData {
         totalMedium: number;
         totalHard: number;
     };
+
+    // --- NEW FIELDS ---
+    title?: string;
+    about?: string;
+    country?: string;
+    socials?: {
+        github?: string;
+        linkedin?: string;
+        website?: string;
+    };
+    education?: Array<{
+        school: string;
+        degree: string;
+        fieldOfStudy: string;
+        description?: string;
+    }>;
+
     languages: { name: string; problems: number }[];
     submissionCalendar: Record<string, number>; // { "2023-10-25": 5 }
     badges: any[];
     recentActivity: {
         title: string;
         time: string;
-        status: "ACCEPTED" | "WRONG_ANSWER" | "COMPILE_ERROR";
+        status: "PASSED" | "FAILED" | "ERROR";
     }[];
 }
 
@@ -61,5 +78,10 @@ export const uploadAvatar = async ( file: File )=> {
             "Content-Type": "multipart/form-data"
         }
     })
+    return response.data
+}
+
+export const updateProfileSettings = async (formData: any) => {
+    const response = await  api.put("/users/me/profile", formData)
     return response.data
 }
