@@ -20,6 +20,7 @@ export default function Profile() {
             // Don't set loading(true) here to prevent full page flash
             const profileData = await fetchUsersProfile(id || "me");
             setData(profileData);
+            console.log(profileData.badges);
         } catch (err) {
             console.error("Failed to load profile", err);
         } finally {

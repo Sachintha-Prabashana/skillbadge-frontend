@@ -46,3 +46,14 @@ export const getChallengeHint = async (challengeId: string, code: string, langua
 
     return response.data // hint, remainingPoints, hint_cost, message
 }
+
+export const fetchDailyChallengeId = async () => {
+    const response = await api.get("/challenges/daily/id")
+    return response.data.challengeId
+}
+
+export const fetchRandomChallenge = async () => {
+    const response = await api.get("/challenges/random")
+    return response.data
+}
+
