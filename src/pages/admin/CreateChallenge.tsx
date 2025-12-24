@@ -99,7 +99,7 @@ export default function CreateChallenge() {
         e.preventDefault();
         setLoading(true);
         try {
-            await api.post("/challenges/create", formData);
+            await api.post("/admin/challenges/create", formData);
             toast.success("Challenge published successfully!", {
                 duration: 3000,
                 position: "top-right",
@@ -128,7 +128,7 @@ export default function CreateChallenge() {
         if (!aiPrompt) return;
         setIsGenerating(true);
         try {
-            const res = await api.post("/challenges/generate-ai", { topic: aiPrompt });
+            const res = await api.post("/admin/challenges/generate-ai", { topic: aiPrompt });
             setFormData(res.data);
             if (res.data.allowedLanguages?.length > 0) {
                 setActiveLangTab(res.data.allowedLanguages[0]);

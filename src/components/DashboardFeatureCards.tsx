@@ -117,7 +117,7 @@ export default function DashboardFeatureCards() {
 
 
             {/* === CARD 3: UPCOMING CONTEST (Static) === */}
-            <Link to="/contests" className="group bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a] hover:border-emerald-500/50 transition-all hover:shadow-lg hover:shadow-emerald-500/10 relative overflow-hidden h-[160px] flex flex-col justify-between">
+            <Link to="/contest/live" className="group bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a] hover:border-emerald-500/50 transition-all hover:shadow-lg hover:shadow-emerald-500/10 relative overflow-hidden h-[160px] flex flex-col justify-between">
                 <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all"></div>
                 <div className="flex justify-between items-start">
                     <div className="p-2 bg-emerald-500/10 rounded-lg text-emerald-400">

@@ -11,6 +11,8 @@ import Leaderboard from "../pages/Leaderboard.tsx"
 import Profile from "../pages/Profile.tsx"
 
 
+
+
 const Index = lazy(() => import("../pages/Index"))
 const Login = lazy(() => import("../pages/Login"))
 const Register = lazy(() => import("../pages/Register"))
@@ -24,10 +26,14 @@ const CreateChallenge = lazy(() => import("../pages/admin/CreateChallenge"))
 const ChallengeSolver = lazy(() => import("../pages/ChallengeSolver"))
 const AuthSuccess = lazy(() => import("../pages/AuthSuccess"))
 const ProfileSettings = lazy(() => import("../pages/ProfileSettings.tsx"))
+const ContestLive = lazy(() => import("../components/ContestLive.tsx"));
+const Discuss = lazy(() => import("../pages/Discuss.tsx"));
+const PostDetails = lazy(() => import("../pages/PostDetails.tsx"));
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
   // @ts-ignore
+    // @ts-ignore
     return (
     <BrowserRouter>
       <Suspense
@@ -38,7 +44,6 @@ export default function Router() {
         }
       >
         <Routes>
-          {/* --- Layout Routes (Pages with Header & Footer) --- */}
           <Route element={<MarketingLayout />}>
             <Route path="/" element={<Index />} />
           </Route>
@@ -66,6 +71,9 @@ export default function Router() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:id" element={<Profile />} />
                 <Route path="/profile/me/settings" element={<ProfileSettings />} />
+                <Route path="/contest/live" element={<ContestLive />}/>
+                <Route path="/discuss" element={<Discuss />} />
+                <Route path="/discuss/:id" element={<PostDetails />} />
 
 
             </Route>
@@ -73,6 +81,8 @@ export default function Router() {
             {/* This matches the /challenges/:id link from the dashboard */}
             <Route path="/challenges/:id" element={<ChallengeSolver />} />
             <Route path="/auth-success" element={<AuthSuccess />} />
+
+
 
         </Routes>
       </Suspense>
