@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
-    MessageSquare, Search, TrendingUp, Plus, ThumbsUp,
-    Eye, MessageCircle, Briefcase, Code2, Hash, X, Loader2
+    MessageSquare, Search, TrendingUp, Plus, ArrowUpCircle,
+    MessageCircle, Briefcase, Code2, Hash, X, Loader2
 } from "lucide-react";
-import { toast } from "react-hot-toast";
 import { io } from "socket.io-client";
 import { createPost, fetchPosts, toggleVote, type Post } from "../services/discuss";
+import { useToast } from "../context/ToastContext";
 
 export default function Discuss() {
+    const { showToast } = useToast();
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState("All Topics");
     const [searchQuery, setSearchQuery] = useState("");
+
+    // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newPostData, setNewPostData] = useState({ title: "", content: "", category: "General", tags: "" });
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,7 +31,7 @@ export default function Discuss() {
             setPosts(data);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to load posts");
+            showToast("Failed to load posts", "error");
         } finally {
             setLoading(false);
         }
@@ -45,13 +48,9 @@ export default function Discuss() {
 
         socket.on("new_post", (newPost: Post) => {
             setPosts((prevPosts) => {
-                // Check if this post ID already exists in our list
-                // If I just created it manually, it will be there, so we ignore the socket message
                 const exists = prevPosts.some(p => p._id === newPost._id);
                 if (exists) return prevPosts;
-
-                // If it's a new post from someone else, add it to the top
-                toast("New discussion started!", { icon: "💬" });
+                showToast("New discussion started!", "info");
                 return [newPost, ...prevPosts];
             });
         });
@@ -63,53 +62,54 @@ export default function Discuss() {
         });
 
         return () => { socket.disconnect(); };
-    }, [])
+    }, [showToast]);
 
     const handleVote = async (e: React.MouseEvent, postId: string) => {
-        e.preventDefault(); // Prevent clicking the Link wrapper
+        e.preventDefault();
+        e.stopPropagation();
         try {
-            // Optimistic update
             setPosts(prev => prev.map(p => p._id === postId ? { ...p, voteCount: p.voteCount + 1 } : p));
             await toggleVote(postId);
         } catch (error) {
-            loadPosts(); // Revert on error
+            loadPosts();
+            showToast("Failed to vote", "error");
         }
     };
 
-    // Instant State Update
     const handleCreatePost = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            // 1. Send to API
             const createdPost = await createPost({
                 ...newPostData,
                 tags: newPostData.tags.split(",").map(t => t.trim())
             });
-
-            // 2. Update UI Immediately (Don't wait for socket)
             setPosts(prev => [createdPost, ...prev]);
-
             setIsModalOpen(false);
             setNewPostData({ title: "", content: "", category: "General", tags: "" });
-            toast.success("Post created!");
-
+            showToast("Post created successfully!", "success");
         } catch (error) {
-            toast.error("Failed to create post");
+            showToast("Failed to create post", "error");
         } finally {
             setIsSubmitting(false);
         }
-    }
+    };
 
     return (
-        <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-4 gap-8">
-            {/* Sidebar */}
-            <div className="lg:col-span-1 space-y-6">
-                <button onClick={() => setIsModalOpen(true)} className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all">
+        <div className="max-w-6xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+            {/* --- LEFT SIDEBAR (Navigation) --- */}
+            <div className="lg:col-span-3 space-y-2">
+                {/* ⚪️ NEW POST BUTTON (Neutral White/Grey) */}
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="w-full bg-white hover:bg-slate-200 text-black font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all mb-6"
+                >
                     <Plus className="w-5 h-5" /> New Post
                 </button>
-                {/* Categories */}
-                <div className="bg-[#1a1a1a] border border-[#3e3e3e] rounded-xl overflow-hidden">
+
+                {/* Categories List */}
+                <div className="space-y-1">
                     {[
                         { name: "All Topics", icon: Hash },
                         { name: "Interview Experience", icon: Briefcase },
@@ -117,63 +117,161 @@ export default function Discuss() {
                         { name: "Compensation", icon: TrendingUp },
                         { name: "General", icon: MessageSquare }
                     ].map((cat) => (
-                        <button key={cat.name} onClick={() => setActiveCategory(cat.name)} className={`w-full text-left px-5 py-3 flex items-center gap-3 text-sm font-medium transition-colors ${activeCategory === cat.name ? "bg-emerald-500/10 text-emerald-500 border-l-2 border-emerald-500" : "text-slate-400 hover:bg-[#282828]"}`}>
-                            <cat.icon className="w-4 h-4" /> {cat.name}
+                        <button
+                            key={cat.name}
+                            onClick={() => setActiveCategory(cat.name)}
+                            className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm font-medium rounded-lg transition-colors ${
+                                activeCategory === cat.name
+                                    ? "text-white bg-[#262626]" // Active: White text, subtle dark bg
+                                    : "text-slate-500 hover:text-slate-300 hover:bg-[#1a1a1a]"
+                            }`}
+                        >
+                            <cat.icon className={`w-4 h-4 ${activeCategory === cat.name ? "text-white" : "text-slate-500"}`} />
+                            {cat.name}
                         </button>
                     ))}
                 </div>
             </div>
 
-            {/* Feed */}
-            <div className="lg:col-span-3">
-                <div className="flex gap-4 mb-6">
-                    <div className="flex-1 bg-[#1a1a1a] border border-[#3e3e3e] rounded-xl flex items-center px-4 py-3">
-                        <Search className="w-5 h-5 text-slate-500 mr-3" />
-                        <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." className="bg-transparent text-white w-full outline-none" />
-                    </div>
+            {/* --- MAIN FEED (Right) --- */}
+            <div className="lg:col-span-9">
+
+                {/* Search Bar */}
+                <div className="bg-[#1a1a1a] rounded-xl px-4 py-3 flex items-center mb-6 border border-[#262626] focus-within:border-slate-500 transition-colors">
+                    <Search className="w-5 h-5 text-slate-500 mr-3" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search topics, companies, or keywords..."
+                        className="bg-transparent text-white w-full outline-none placeholder-slate-600"
+                    />
                 </div>
 
-                <div className="space-y-4">
-                    {loading ? <div className="text-center py-10"><Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-500"/></div> :
+                {/* Posts List */}
+                <div className="space-y-2">
+                    {loading ? (
+                        <div className="text-center py-20"><Loader2 className="w-8 h-8 animate-spin mx-auto text-slate-500"/></div>
+                    ) : posts.length === 0 ? (
+                        <div className="text-center py-20 text-slate-500 bg-[#161616] rounded-xl border border-[#262626] border-dashed">
+                            No discussions found. Be the first to post!
+                        </div>
+                    ) : (
                         posts.map(post => (
-                            <div key={post._id} className="bg-[#1a1a1a] border border-[#3e3e3e] p-5 rounded-xl hover:border-emerald-500/30 transition-all group">
-                                <div className="flex items-start gap-4">
-                                    <button onClick={(e) => handleVote(e, post._id)} className="flex flex-col items-center bg-[#282828] hover:bg-[#333] rounded-lg p-2 min-w-[50px] z-10">
-                                        <ThumbsUp className={`w-4 h-4 mb-1 ${post.voteCount > 0 ? "text-emerald-500" : "text-slate-400"}`} />
-                                        <span className="text-sm font-bold text-white">{post.voteCount}</span>
-                                    </button>
-                                    <Link to={`/discuss/${post._id}`} className="flex-1">
-                                        <h3 className="text-lg font-bold text-white mb-2">{post.title}</h3>
-                                        <p className="text-slate-400 text-sm mb-4 line-clamp-2">{post.content}</p>
-                                        <div className="flex items-center gap-4 text-slate-500 text-xs">
-                                            <span className="text-emerald-500">{post.author?.firstname}</span>
-                                            <span><MessageCircle className="w-3 h-3 inline mr-1" /> {post.commentCount} comments</span>
+                            <div key={post._id} className="group bg-[#161616] hover:bg-[#1c1c1c] p-5 rounded-lg transition-colors border border-transparent hover:border-[#262626]">
+                                <div className="flex gap-4">
+
+                                    {/* Avatar */}
+                                    <div className="w-10 h-10 rounded-full bg-[#262626] flex items-center justify-center text-slate-500 font-bold text-sm shrink-0 border border-[#333]">
+                                        {post.author?.firstname?.[0] || "?"}
+                                    </div>
+
+                                    <div className="flex-1">
+                                        <Link to={`/discuss/${post._id}`} className="block">
+                                            {/* 🔵 Title Hover -> Blue (Standard) or White */}
+                                            <h3 className="text-lg font-bold text-slate-200 group-hover:text-blue-400 transition-colors mb-1">
+                                                {post.title}
+                                            </h3>
+
+                                            <p className="text-slate-500 text-sm line-clamp-2 mb-3 leading-relaxed">
+                                                {post.content}
+                                            </p>
+                                        </Link>
+
+                                        {/* Meta Data Row */}
+                                        <div className="flex items-center gap-6 text-xs text-slate-600 font-medium">
+                                            <span className="text-slate-400 hover:text-white transition-colors cursor-pointer">
+                                                {post.author?.firstname} {post.author?.lastname}
+                                            </span>
+
+                                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+
+                                            <span className="flex items-center gap-1.5 hover:text-slate-300">
+                                                <MessageCircle className="w-3.5 h-3.5" /> {post.commentCount}
+                                            </span>
+
+                                            {/* 🔵 Vote Button -> Blue or White */}
+                                            <button
+                                                onClick={(e) => handleVote(e, post._id)}
+                                                className={`flex items-center gap-1.5 transition-colors ${post.voteCount > 0 ? "text-blue-400" : "hover:text-blue-400"}`}
+                                            >
+                                                <ArrowUpCircle className="w-3.5 h-3.5" />
+                                                {post.voteCount} votes
+                                            </button>
                                         </div>
-                                    </Link>
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                    )}
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* --- CREATE POST MODAL --- */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-                    <div className="bg-[#1a1a1a] w-full max-w-lg rounded-2xl p-6 border border-[#3e3e3e]">
-                        <div className="flex justify-between mb-4">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div className="bg-[#1a1a1a] w-full max-w-lg rounded-2xl p-6 border border-[#333] shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-white">New Discussion</h2>
-                            <button onClick={() => setIsModalOpen(false)}><X className="text-slate-400" /></button>
+                            <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-white transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
+
                         <form onSubmit={handleCreatePost} className="space-y-4">
-                            <input required value={newPostData.title} onChange={e => setNewPostData({...newPostData, title: e.target.value})} className="w-full bg-[#282828] rounded-lg px-4 py-2 text-white outline-none" placeholder="Title" />
-                            <select value={newPostData.category} onChange={e => setNewPostData({...newPostData, category: e.target.value})} className="w-full bg-[#282828] rounded-lg px-4 py-2 text-white outline-none">
-                                <option>General</option>
-                                <option>Interview Experience</option>
-                                <option>Solutions</option>
-                            </select>
-                            <textarea required value={newPostData.content} onChange={e => setNewPostData({...newPostData, content: e.target.value})} className="w-full bg-[#282828] rounded-lg px-4 py-2 text-white h-32 outline-none resize-none" placeholder="Content..." />
-                            <input value={newPostData.tags} onChange={e => setNewPostData({...newPostData, tags: e.target.value})} className="w-full bg-[#282828] rounded-lg px-4 py-2 text-white outline-none" placeholder="Tags (comma separated)" />
-                            <button disabled={isSubmitting} className="w-full bg-emerald-500 text-black font-bold py-3 rounded-xl">{isSubmitting ? "Posting..." : "Post"}</button>
+                            <div>
+                                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Title</label>
+                                <input
+                                    required
+                                    value={newPostData.title}
+                                    onChange={e => setNewPostData({...newPostData, title: e.target.value})}
+                                    className="w-full bg-[#262626] border border-[#333] rounded-lg px-4 py-2.5 text-white outline-none focus:border-slate-500 transition-colors"
+                                    placeholder="What's on your mind?"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Category</label>
+                                <select
+                                    value={newPostData.category}
+                                    onChange={e => setNewPostData({...newPostData, category: e.target.value})}
+                                    className="w-full bg-[#262626] border border-[#333] rounded-lg px-4 py-2.5 text-white outline-none focus:border-slate-500 transition-colors appearance-none"
+                                >
+                                    <option>General</option>
+                                    <option>Interview Experience</option>
+                                    <option>Solutions</option>
+                                    <option>Compensation</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Content</label>
+                                <textarea
+                                    required
+                                    value={newPostData.content}
+                                    onChange={e => setNewPostData({...newPostData, content: e.target.value})}
+                                    className="w-full bg-[#262626] border border-[#333] rounded-lg px-4 py-3 text-white h-32 outline-none resize-none focus:border-slate-500 transition-colors leading-relaxed"
+                                    placeholder="Share your thoughts..."
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-medium text-slate-400 mb-1.5 uppercase tracking-wider">Tags</label>
+                                <input
+                                    value={newPostData.tags}
+                                    onChange={e => setNewPostData({...newPostData, tags: e.target.value})}
+                                    className="w-full bg-[#262626] border border-[#333] rounded-lg px-4 py-2.5 text-white outline-none focus:border-slate-500 transition-colors"
+                                    placeholder="e.g. Java, System Design (comma separated)"
+                                />
+                            </div>
+
+                            {/* ⚪️ MODAL BUTTON - Neutral Style */}
+                            <button
+                                disabled={isSubmitting}
+                                className="w-full bg-white hover:bg-slate-200 text-black font-bold py-3 rounded-lg mt-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? "Publishing..." : "Post Discussion"}
+                            </button>
                         </form>
                     </div>
                 </div>

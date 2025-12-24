@@ -1,30 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MessageCircle, Send, Loader2, Reply, X } from "lucide-react";
-import { toast } from "react-hot-toast";
+import {
+    ArrowLeft, Loader2, MessageSquare,
+    Code, Link as LinkIcon, AtSign, MoreHorizontal
+} from "lucide-react";
 import { io } from "socket.io-client";
-import { fetchComments, addComment, type Comment } from "../services/discuss";
+import { fetchComments, addComment, fetchPostById, type Comment, type Post } from "../services/discuss";
+import { useToast } from "../context/ToastContext";
 
 export default function PostDetails() {
     const { id } = useParams<{ id: string }>();
+    const { showToast } = useToast();
+
+    // State
+    const [post, setPost] = useState<Post | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-
-    // 👇 NEW STATE: Who are we replying to?
     const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
 
-    // ... useEffect for loading/socket remains the same ...
     useEffect(() => {
         if (!id) return;
-        fetchComments(id).then(data => setComments(data.comments)).finally(() => setLoading(false));
+
+        const loadData = async () => {
+            try {
+                const [postData, commentsData] = await Promise.all([
+                    fetchPostById(id),
+                    fetchComments(id)
+                ]);
+                setPost(postData);
+                setComments(commentsData.comments);
+            } catch (error) {
+                showToast("Failed to load discussion", "error");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
 
         const socket = io("http://localhost:5000");
         socket.emit("join_post", id);
         socket.on("receive_comment", (c) => setComments(prev => [c, ...prev]));
         return () => { socket.disconnect() };
-    }, [id]);
+    }, [id, showToast]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -32,116 +52,148 @@ export default function PostDetails() {
 
         setSubmitting(true);
         try {
-            // 👇 Send parentId if we are replying
             await addComment(id, newComment, replyingTo?._id);
             setNewComment("");
-            setReplyingTo(null); // Close the reply banner
-            toast.success("Response sent!");
+            setReplyingTo(null);
+            showToast("Comment posted", "success");
         } catch (error) {
-            toast.error("Failed");
+            showToast("Failed to post", "error");
         } finally {
             setSubmitting(false);
         }
     };
 
-    // 👇 Helper: Organize comments into Parent -> Children tree
+    if (loading) return <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-500"/></div>;
+    if (!post) return <div className="text-center py-20 text-slate-500">Post not found</div>;
+
     const rootComments = comments.filter(c => !c.parentId);
     const getReplies = (parentId: string) => comments.filter(c => c.parentId === parentId);
 
     return (
-        <div className="max-w-4xl mx-auto p-6">
-            <Link to="/discuss" className="flex items-center gap-2 text-slate-400 hover:text-white mb-6 w-fit">
-                <ArrowLeft className="w-4 h-4" /> Back
+        <div className="max-w-5xl mx-auto px-6 py-8">
+            {/* Header / Nav */}
+            <Link to="/discuss" className="inline-flex items-center gap-2 text-slate-500 hover:text-white mb-8 transition-colors text-sm font-medium">
+                <ArrowLeft className="w-4 h-4" /> Back to Discussions
             </Link>
 
-            <div className="bg-[#1a1a1a] border border-[#3e3e3e] rounded-xl p-6 min-h-[400px] flex flex-col relative">
+            {/* --- POST CONTENT (Borderless) --- */}
+            <div className="mb-12">
+                <h1 className="text-3xl font-extrabold text-white mb-4 leading-tight">{post.title}</h1>
 
-                <h3 className="text-white font-bold text-lg mb-6 flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-emerald-500" />
-                    Comments ({comments.length})
-                </h3>
+                {/* Meta Row */}
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="w-8 h-8 bg-indigo-500/20 rounded-full flex items-center justify-center text-indigo-400 font-bold text-sm">
+                        {post.author?.firstname?.[0]}
+                    </div>
+                    <div className="text-sm">
+                        <span className="text-slate-200 font-medium block">{post.author?.firstname} {post.author?.lastname}</span>
+                        <span className="text-slate-500 text-xs">
+                             {new Date(post.createdAt).toLocaleDateString()} • {post.views} views
+                        </span>
+                    </div>
+                </div>
 
-                {/* --- INPUT AREA --- */}
-                <div className="mb-8 sticky top-4 z-10">
-                    {/* 👇 "Replying to..." Banner (TikTok Style) */}
+                {/* Body */}
+                <div className="text-slate-300 text-lg leading-relaxed whitespace-pre-wrap">
+                    {post.content}
+                </div>
+
+                {/* Tags */}
+                <div className="flex gap-2 mt-6">
+                    {post.tags.map(tag => (
+                        <span key={tag} className="px-3 py-1 bg-[#262626] text-slate-400 text-xs rounded-full">
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-[#262626] w-full mb-10"></div>
+
+            {/* --- COMMENT INPUT (Rich Text Style) --- */}
+            <div className="mb-12">
+                <div className="flex items-center gap-2 mb-4">
+                    <MessageSquare className="w-5 h-5 text-slate-400" />
+                    <h3 className="text-white font-bold text-lg">Comments ({comments.length})</h3>
+                </div>
+
+                <div className="bg-[#1e1e1e] rounded-xl overflow-hidden border border-[#333] focus-within:border-slate-500 transition-colors">
                     {replyingTo && (
-                        <div className="bg-[#282828] text-slate-400 text-xs px-4 py-2 rounded-t-xl flex justify-between items-center border-x border-t border-[#3e3e3e]">
-                            <span>
-                                Replying to <span className="text-emerald-500 font-bold">@{replyingTo.author?.firstname}</span>
-                            </span>
-                            <button onClick={() => setReplyingTo(null)}>
-                                <X className="w-4 h-4 hover:text-white" />
-                            </button>
+                        <div className="bg-[#262626] px-4 py-2 text-xs text-slate-400 flex justify-between border-b border-[#333]">
+                            <span>Replying to <span className="text-emerald-400">@{replyingTo.author?.firstname}</span></span>
+                            <button onClick={() => setReplyingTo(null)} className="hover:text-white"><span className="text-lg">×</span></button>
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="flex gap-2">
-                        <textarea
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder={replyingTo ? `Reply to ${replyingTo.author?.firstname}...` : "Add to the discussion..."}
-                            className={`flex-1 bg-[#282828] border border-[#3e3e3e] p-4 text-white outline-none resize-none h-24 focus:border-emerald-500 transition-all ${replyingTo ? 'rounded-b-xl border-t-0' : 'rounded-xl'}`}
-                        />
-                        <button disabled={submitting || !newComment.trim()} className="bg-emerald-500 text-black font-bold px-6 rounded-xl hover:bg-emerald-400 h-24">
-                            {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                    <textarea
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        placeholder="Type comment here..."
+                        className="w-full bg-transparent text-slate-200 p-4 min-h-[120px] outline-none resize-none placeholder-slate-600 font-normal"
+                    />
+
+                    {/* Toolbar */}
+                    <div className="flex items-center justify-between px-4 py-3 bg-[#262626] border-t border-[#333]">
+                        <div className="flex gap-4 text-slate-500">
+                            <button className="hover:text-white transition-colors"><Code className="w-4 h-4" /></button>
+                            <button className="hover:text-white transition-colors"><LinkIcon className="w-4 h-4" /></button>
+                            <button className="hover:text-white transition-colors"><AtSign className="w-4 h-4" /></button>
+                        </div>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={submitting || !newComment.trim()}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-1.5 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {submitting ? "Posting..." : "Comment"}
                         </button>
-                    </form>
+                    </div>
                 </div>
+            </div>
 
-                {/* --- COMMENTS LIST (NESTED) --- */}
-                <div className="space-y-6">
-                    {rootComments.map((root) => (
-                        <div key={root._id}>
-                            {/* Main Comment */}
-                            <CommentItem
-                                comment={root}
-                                onReply={() => setReplyingTo(root)}
-                            />
+            {/* --- COMMENT LIST --- */}
+            <div className="space-y-8">
+                {rootComments.map((root) => (
+                    <div key={root._id}>
+                        <CommentItem comment={root} onReply={() => setReplyingTo(root)} />
 
-                            {/* Replies (Indented) */}
-                            <div className="ml-12 mt-3 space-y-3 border-l-2 border-[#282828] pl-4">
-                                {getReplies(root._id).map((reply) => (
-                                    <CommentItem
-                                        key={reply._id}
-                                        comment={reply}
-                                        onReply={() => setReplyingTo(root)} // Keeping nesting 1-level deep usually better for UI
-                                        isReply
-                                    />
+                        {/* Nested Replies */}
+                        {getReplies(root._id).length > 0 && (
+                            <div className="ml-5 mt-4 pl-4 border-l-2 border-[#262626] space-y-6">
+                                {getReplies(root._id).map(reply => (
+                                    <CommentItem key={reply._id} comment={reply} onReply={() => setReplyingTo(root)} isReply />
                                 ))}
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );
 }
 
-// 👇 Extracted Component for cleaner code
+// Clean Comment Component
 function CommentItem({ comment, onReply, isReply = false }: { comment: Comment, onReply: () => void, isReply?: boolean }) {
     return (
-        <div className={`flex gap-4 animate-in fade-in slide-in-from-bottom-2 ${isReply ? 'opacity-90' : ''}`}>
+        <div className={`flex gap-4 group ${isReply ? 'text-sm' : ''}`}>
             {/* Avatar */}
-            <div className={`rounded-full flex items-center justify-center border border-[#3e3e3e] text-emerald-500 font-bold shrink-0 bg-[#282828] ${isReply ? 'w-8 h-8 text-xs' : 'w-10 h-10'}`}>
+            <div className={`rounded-full flex items-center justify-center shrink-0 font-bold bg-[#262626] text-slate-400 ${isReply ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm'}`}>
                 {comment.author?.firstname?.[0]}
             </div>
 
             <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                    <span className="text-white font-bold text-sm">{comment.author?.firstname}</span>
+                    <span className="text-slate-200 font-semibold text-sm">{comment.author?.firstname} {comment.author?.lastname}</span>
                     <span className="text-slate-600 text-xs">{new Date(comment.createdAt).toLocaleDateString()}</span>
                 </div>
 
-                <p className="text-slate-300 text-sm whitespace-pre-wrap mb-1">{comment.content}</p>
+                <p className="text-slate-400 leading-relaxed mb-2">{comment.content}</p>
 
-                {/* Reply Button */}
-                <button
-                    onClick={onReply}
-                    className="text-slate-500 text-xs font-medium hover:text-emerald-500 flex items-center gap-1 transition-colors"
-                >
-                    <Reply className="w-3 h-3" /> Reply
-                </button>
+                <div className="flex items-center gap-4">
+                    <button onClick={onReply} className="text-slate-600 hover:text-white text-xs font-medium transition-colors">Reply</button>
+                    <button className="text-slate-600 hover:text-white transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                </div>
             </div>
         </div>
-    )
+    );
 }

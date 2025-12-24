@@ -42,7 +42,7 @@ export default function Header() {
                 <Link to="/dashboard" className={isActive('/dashboard')}>Challenges</Link>
                 <Link to="/learn" className={isActive('/learn')}>Learn</Link>
                 <Link to="/discuss" className={isActive('/discuss')}>Discuss</Link>
-                <Link to="/contests" className={isActive('/contests')}>Contests</Link>
+                <Link to="/contest/live" className={isActive('/contests')}>Contests</Link>
                 <Link to="/leaderboard" className={isActive('/leaderboard')}>Leaderboard</Link>
             </nav>
 

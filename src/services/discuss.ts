@@ -39,6 +39,11 @@ export const fetchPosts = async (params: { category?: string; search?: string; t
     return response.data;
 };
 
+export const fetchPostById = async (id: string) => {
+    const response = await api.get<Post>(`/discuss/${id}`);
+    return response.data;
+}
+
 export const createPost = async (data: { title: string; content: string; category: string; tags: string[] }) => {
     const response = await api.post<Post>("/discuss", data);
     return response.data;

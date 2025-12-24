@@ -33,7 +33,7 @@ export default function Sidebar() {
         {
             title: "COMMUNITY",
             items: [
-                { icon: Trophy, label: "Contests", path: "/contests" },
+                { icon: Trophy, label: "Contests", path: "/contest/live" },
                 { icon: MessageSquare, label: "Discuss", path: "/discuss" },
                 { icon: Zap, label: "Leaderboard", path: "/leaderboard" },
             ]
