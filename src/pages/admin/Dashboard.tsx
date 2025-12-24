@@ -1,102 +1,188 @@
-import { Users, Code2, Trophy, Activity, ArrowUpRight } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import {
-    AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
+    Users, Code2, Terminal, Activity, Clock, CheckCircle, XCircle, Loader2
+} from "lucide-react";
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
+import { fetchDashboardStats, type DashboardData } from "../../services/admin/admin.ts";
+import { useToast } from "../../context/ToastContext"; // Ensure you have this context
 
-// --- MOCK DATA ---
-const MOCK_STATS = [
-    { label: "Total Students", value: "1,240", change: "+12%", icon: Users, color: "blue" },
-    { label: "Challenges", value: "45", change: "+3", icon: Code2, color: "indigo" },
-    { label: "Submissions", value: "8,502", change: "+18%", icon: Activity, color: "emerald" },
-    { label: "Total Badges", value: "320", change: "+5%", icon: Trophy, color: "amber" },
-];
+export default function AdminDashboard() {
+    const { showToast } = useToast();
+    const [stats, setStats] = useState<DashboardData | null>(null);
+    const [loading, setLoading] = useState(true);
 
-const CHART_DATA = [
-    { name: 'Mon', submissions: 40 },
-    { name: 'Tue', submissions: 75 },
-    { name: 'Wed', submissions: 50 },
-    { name: 'Thu', submissions: 120 },
-    { name: 'Fri', submissions: 180 },
-    { name: 'Sat', submissions: 90 },
-    { name: 'Sun', submissions: 60 },
-];
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchDashboardStats();
+                setStats(data);
+                console.log(data)
+            } catch (error) {
+                console.error(error);
+                showToast("Failed to load dashboard data", "error");
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, [showToast]);
 
-export default function AdminOverview() {
+    if (loading) {
+        return (
+            <div className="flex h-[80vh] items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+            </div>
+        );
+    }
+
+    if (!stats) return <div className="p-8 text-center text-red-500">Error loading stats.</div>;
+
+    // Helper to map dynamic data to UI cards
+    const statCards = [
+        {
+            title: "Total Students",
+            value: stats.counts.students.toLocaleString(),
+            icon: Users,
+            color: "text-blue-600",
+            bg: "bg-blue-50"
+        },
+        {
+            title: "Active Challenges",
+            value: stats.counts.challenges.toLocaleString(),
+            icon: Code2,
+            color: "text-emerald-600",
+            bg: "bg-emerald-50"
+        },
+        {
+            title: "Total Submissions",
+            value: stats.counts.submissions.toLocaleString(),
+            icon: Terminal,
+            color: "text-purple-600",
+            bg: "bg-purple-50"
+        },
+        {
+            title: "Avg. Pass Rate",
+            value: `${stats.counts.passRate}%`,
+            icon: Activity,
+            color: "text-orange-600",
+            bg: "bg-orange-50"
+        },
+    ];
+
     return (
-        <div className="space-y-8">
+        <div className="min-h-screen text-slate-800">
             {/* Header */}
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Dashboard Overview</h1>
-                <p className="text-slate-500">Welcome back, Admin. Here is what's happening today.</p>
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-slate-900">Dashboard Overview</h1>
+                <p className="text-slate-500 mt-1">Real-time platform insights.</p>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {MOCK_STATS.map((stat, index) => (
-                    <div key={index} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition">
+            {/* 1. STATS CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                {statCards.map((stat, index) => (
+                    <div key={index} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
                         <div className="flex justify-between items-start mb-4">
-                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center bg-${stat.color}-50 text-${stat.color}-600`}>
-                                <stat.icon className="w-5 h-5" />
+                            <div className={`p-3 rounded-lg ${stat.bg} ${stat.color}`}>
+                                <stat.icon className="w-6 h-6" />
                             </div>
-                            <span className="flex items-center text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                {stat.change} <ArrowUpRight className="w-3 h-3 ml-1" />
-              </span>
+                            <span className="flex items-center text-xs font-bold px-2 py-1 rounded-full text-slate-500 bg-slate-100 border border-slate-200">
+                                Live
+                            </span>
                         </div>
-                        <h3 className="text-3xl font-bold text-slate-900">{stat.value}</h3>
-                        <p className="text-sm text-slate-500 font-medium mt-1">{stat.label}</p>
+                        <h3 className="text-slate-500 text-sm font-medium">{stat.title}</h3>
+                        <p className="text-3xl font-bold text-slate-900 mt-1">{stat.value}</p>
                     </div>
                 ))}
             </div>
 
-            {/* Charts Section */}
+            {/* 2. CHARTS & ACTIVITY */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-800 mb-6">Submission Activity</h3>
-                    <div className="h-64">
+
+                {/* Main Activity Chart */}
+                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-bold text-slate-900">Submission Activity (Last 7 Days)</h3>
+                    </div>
+
+                    <div className="h-80 w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={CHART_DATA}>
+                            <AreaChart data={stats.chartData}>
                                 <defs>
                                     <linearGradient id="colorSub" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.1}/>
-                                        <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#64748b'}} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    stroke="#64748b"
+                                    tick={{ fontSize: 12 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tickFormatter={(val) => val.slice(5)} // Show MM-DD only
                                 />
-                                <Area type="monotone" dataKey="submissions" stroke="#4f46e5" strokeWidth={3} fillOpacity={1} fill="url(#colorSub)" />
+                                <YAxis stroke="#64748b" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#fff', borderColor: '#e2e8f0', color: '#1e293b', borderRadius: '8px' }}
+                                    itemStyle={{ color: '#6366f1' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="submissions"
+                                    stroke="#6366f1"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorSub)"
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* System Health / Recent */}
-                <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-800 mb-4">System Status</h3>
-                    <div className="space-y-4">
-                        <StatusItem label="API Latency" value="24ms" status="good" />
-                        <StatusItem label="Piston Engine" value="Operational" status="good" />
-                        <StatusItem label="Database" value="Connected" status="good" />
-                        <StatusItem label="Error Rate" value="0.01%" status="good" />
-                    </div>
+                {/* Recent Activity Feed */}
+                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <h3 className="text-lg font-bold mb-6 text-slate-900">Recent Activity</h3>
+
+                    {stats.recentActivity.length === 0 ? (
+                        <div className="text-slate-400 text-sm text-center py-10 italic">
+                            No recent activity
+                        </div>
+                    ) : (
+                        <div className="space-y-6">
+                            {stats.recentActivity.map((item, i) => (
+                                <div key={i} className="flex gap-4 relative">
+                                    {/* Connector Line */}
+                                    {i !== stats.recentActivity.length - 1 && (
+                                        <div className="absolute left-[11px] top-8 bottom-[-24px] w-0.5 bg-slate-100"></div>
+                                    )}
+
+                                    {/* Icon */}
+                                    <div className={`w-6 h-6 rounded-full shrink-0 flex items-center justify-center z-10 
+                                        ${item.status === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                                        item.status === 'failed' ? 'bg-red-100 text-red-600' :
+                                            'bg-blue-100 text-blue-600'}`}>
+                                        {item.status === 'success' ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
+                                    </div>
+
+                                    <div>
+                                        <p className="text-sm text-slate-600">
+                                            <span className="font-bold text-slate-900 hover:text-indigo-600 cursor-pointer transition-colors">
+                                                {item.user}
+                                            </span> {item.action.replace(item.user, '')} {/* Remove duplicate name if present */}
+                                        </p>
+                                        <span className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                                            <Clock className="w-3 h-3" /> {item.time}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
-}
-
-function StatusItem({ label, value, status }: any) {
-    return (
-        <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-            <span className="text-sm font-medium text-slate-600">{label}</span>
-            <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-sm font-bold text-slate-800">{value}</span>
-            </div>
-        </div>
-    )
 }
