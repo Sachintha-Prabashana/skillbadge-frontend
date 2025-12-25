@@ -90,8 +90,21 @@ export default function ManageUsers() {
 
             // Close Modal
             setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        } catch (error) {
-            showToast("Failed to update status", "error");
+        } catch (error: any) {
+            // --- THIS IS THE FIX ---
+
+            // 1. Check if the server sent a specific message (like "You cannot ban yourself")
+            // Axios stores the server response inside error.response.data
+            const serverMessage = error.response?.data?.message || "Failed to update status";
+
+            // 2. Show that specific message to the user
+            showToast(serverMessage, "error");
+
+            // 3. If it's a specific logic error (like self-ban), you might want to close the modal
+            // because retrying won't fix it.
+            if (error.response?.status === 403 ) {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+            }
         } finally {
             setActionLoading(false);
         }
