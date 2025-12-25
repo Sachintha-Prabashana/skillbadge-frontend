@@ -59,7 +59,7 @@ export default function Router() {
                 <Route path="challenge" element={<Challenge/>} />
                 <Route path="users" element={<ManageUsers />} />
                 <Route path="settings" element={<Settings />} />
-                <Route path="create-challenge" element={<CreateChallenge />} />
+                <Route path="challenges/new" element={<CreateChallenge />} />
 
             </Route>
 
