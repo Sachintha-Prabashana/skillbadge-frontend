@@ -8,10 +8,10 @@ import {
     Lightbulb,
     Sparkles,
     Loader2,
-    Plus
+    Tag // Imported Tag Icon
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast"; // <--- Import this
+import toast, { Toaster } from "react-hot-toast";
 import api from "../../services/api";
 
 const SUPPORTED_LANGUAGES = [
@@ -19,6 +19,14 @@ const SUPPORTED_LANGUAGES = [
     { id: "python", label: "Python 3" },
     { id: "java", label: "Java" },
     { id: "cpp", label: "C++" }
+];
+
+// Predefined categories list
+const CATEGORY_LIST = [
+    "Array", "String", "Hash Table", "Dynamic Programming",
+    "Math", "Sorting", "Greedy", "Depth-First Search",
+    "Binary Search", "Two Pointers", "Stack", "Queue",
+    "Database", "SQL", "Recursion"
 ];
 
 export default function CreateChallenge() {
@@ -35,6 +43,7 @@ export default function CreateChallenge() {
         description: "",
         difficulty: "EASY",
         points: 10,
+        categories: [] as string[], // Added categories state
         tips: [""],
         allowedLanguages: [] as string[],
         starterCode: [] as { language: string; code: string }[],
@@ -44,6 +53,16 @@ export default function CreateChallenge() {
     // --- HANDLERS ---
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    // Toggle Category Logic
+    const toggleCategory = (category: string) => {
+        const isSelected = formData.categories.includes(category);
+        const newCategories = isSelected
+            ? formData.categories.filter(c => c !== category)
+            : [...formData.categories, category];
+
+        setFormData({ ...formData, categories: newCategories });
     };
 
     const toggleLanguage = (langId: string) => {
@@ -103,27 +122,19 @@ export default function CreateChallenge() {
             toast.success("Challenge published successfully!", {
                 duration: 3000,
                 position: "top-right",
-                style: {
-                    background: "#10B981",
-                    color: "#FFFFFF",
-                    fontWeight: "bold"
-                }
+                style: { background: "#10B981", color: "#FFFFFF", fontWeight: "bold" }
             });
 
-            // Small delay so they see the success message before moving
             setTimeout(() => {
                 navigate("/admin/challenge");
             }, 1000);
         } catch (error) {
-            toast.error("Failed to publish challenge. Please try again.", {
-                position: 'top-right'
-            });
+            toast.error("Failed to publish challenge. Please try again.", { position: 'top-right' });
         } finally {
             setLoading(false);
         }
     };
 
-    // --- AI HANDLER ---
     const handleAIGenerate = async () => {
         if (!aiPrompt) return;
         setIsGenerating(true);
@@ -141,30 +152,18 @@ export default function CreateChallenge() {
     };
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8 font-['Satoshi',_sans-serif] pb-12">
-            {/* Put this at the very top of your returned div */}
+        <div className="max-w-6xl mx-auto space-y-8 font-['Satoshi',_sans-serif] pb-24">
             <Toaster />
 
             {/* --- HEADER --- */}
-            <div className="flex justify-between items-center pt-6">
-                <div>
-                    <h1 className="text-3xl font-bold text-slate-900">Create Challenge</h1>
-                    <p className="text-slate-500 mt-1">Design a new coding problem manually or with AI.</p>
-                </div>
-                <button
-                    onClick={handleSubmit}
-                    disabled={loading}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-70"
-                >
-                    {loading ? "Saving..." : <><Save className="w-5 h-5" /> Publish Challenge</>}
-                </button>
+            <div className="pt-6">
+                <h1 className="text-3xl font-bold text-slate-900">Create Challenge</h1>
+                <p className="text-slate-500 mt-1">Design a new coding problem manually or with AI.</p>
             </div>
 
-            {/* --- AI MAGIC SECTION (NEW) --- */}
+            {/* --- AI MAGIC SECTION --- */}
             <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-2xl p-6 shadow-sm relative overflow-hidden group">
-                {/* Decorative blob */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/40 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-
                 <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-3">
                         <div className="p-1.5 bg-white rounded-lg shadow-sm">
@@ -172,7 +171,6 @@ export default function CreateChallenge() {
                         </div>
                         <h3 className="font-bold text-slate-800 text-lg">Generate with AI</h3>
                     </div>
-
                     <div className="flex gap-3">
                         <input
                             value={aiPrompt}
@@ -186,16 +184,9 @@ export default function CreateChallenge() {
                             disabled={isGenerating || !aiPrompt}
                             className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2 rounded-xl font-bold text-sm transition-all flex items-center gap-2 disabled:opacity-50 shadow-md"
                         >
-                            {isGenerating ? (
-                                <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
-                            ) : (
-                                <><Sparkles className="w-4 h-4 text-yellow-300" /> Magic Generate</>
-                            )}
+                            {isGenerating ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</> : <><Sparkles className="w-4 h-4 text-yellow-300" /> Magic Generate</>}
                         </button>
                     </div>
-                    <p className="text-xs text-slate-500 mt-2 ml-1 font-medium">
-                        Tip: Specify difficulty and language preference for better results.
-                    </p>
                 </div>
             </div>
 
@@ -225,18 +216,6 @@ export default function CreateChallenge() {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Description (Markdown)</label>
-                                <textarea
-                                    name="description"
-                                    value={formData.description}
-                                    onChange={handleChange}
-                                    rows={6}
-                                    className="w-full bg-white border border-slate-300 rounded-lg p-3 text-slate-900 font-mono text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none transition-all placeholder:text-slate-400"
-                                    placeholder="## Problem Statement..."
-                                />
-                            </div>
-
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Difficulty</label>
@@ -261,6 +240,41 @@ export default function CreateChallenge() {
                                         className="w-full bg-white border border-slate-300 rounded-lg p-3 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none"
                                     />
                                 </div>
+                            </div>
+
+                            {/*  NEW: CATEGORY SELECTION */}
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                                    <Tag className="w-4 h-4 text-slate-500" /> Categories / Tags
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {CATEGORY_LIST.map((cat) => (
+                                        <button
+                                            key={cat}
+                                            type="button"
+                                            onClick={() => toggleCategory(cat)}
+                                            className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                                                formData.categories.includes(cat)
+                                                    ? "bg-indigo-100 border-indigo-200 text-indigo-700 hover:bg-indigo-200"
+                                                    : "bg-white border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-700"
+                                            }`}
+                                        >
+                                            {cat}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Description (Markdown)</label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
+                                    onChange={handleChange}
+                                    rows={8}
+                                    className="w-full bg-white border border-slate-300 rounded-lg p-3 text-slate-900 font-mono text-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+                                    placeholder="## Problem Statement..."
+                                />
                             </div>
                         </div>
                     </div>
@@ -312,7 +326,6 @@ export default function CreateChallenge() {
                                         </button>
                                     ))}
                                 </div>
-
                                 <div className="p-0">
                                     <textarea
                                         value={formData.starterCode.find(sc => sc.language === activeLangTab)?.code || ""}
@@ -329,12 +342,10 @@ export default function CreateChallenge() {
                             </div>
                         )}
                     </div>
-
                 </div>
 
                 {/* --- RIGHT COLUMN --- */}
                 <div className="space-y-8">
-
                     {/* 3. Test Cases */}
                     <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                         <div className="flex justify-between items-center mb-6">
@@ -349,7 +360,6 @@ export default function CreateChallenge() {
                                 + Add
                             </button>
                         </div>
-
                         <div className="space-y-4">
                             {formData.testCases.map((tc, idx) => (
                                 <div key={idx} className="bg-slate-50 p-4 rounded-xl border border-slate-200 relative group">
@@ -360,7 +370,6 @@ export default function CreateChallenge() {
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
-
                                     <div className="space-y-3">
                                         <div>
                                             <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Input (stdin)</label>
@@ -409,7 +418,6 @@ export default function CreateChallenge() {
                                 + Add
                             </button>
                         </div>
-
                         <div className="space-y-3">
                             {formData.tips.map((tip, idx) => (
                                 <div key={idx} className="flex gap-2">
@@ -429,9 +437,24 @@ export default function CreateChallenge() {
                             ))}
                         </div>
                     </div>
-
                 </div>
+            </div>
 
+            {/* ✅ NEW: BOTTOM ACTION BAR */}
+            <div className="fixed bottom-0 left-0 lg:left-64 right-0 p-4 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-40 flex justify-end gap-4">
+                <button
+                    onClick={() => navigate("/admin/challenge")}
+                    className="px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200"
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={handleSubmit}
+                    disabled={loading}
+                    className="bg-indigo-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/20 flex items-center gap-2 disabled:opacity-70"
+                >
+                    {loading ? "Saving..." : <><Save className="w-5 h-5" /> Publish Challenge</>}
+                </button>
             </div>
         </div>
     );

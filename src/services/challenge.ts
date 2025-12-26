@@ -6,7 +6,9 @@ export interface Challenge {
     difficulty: "EASY" | "MEDIUM" | "HARD";
     // category: String;
     points: Number;
+
     status: "SOLVED" | "TODO"
+    categories: string[];
 }
 
 export interface ChallengeResponse {
@@ -14,12 +16,21 @@ export interface ChallengeResponse {
     pagination: {
         total: number
         page: number
-        pages: number
+        totalPages: number
     }
 }
 
-export const fetchChallenges = async (page = 1, limit = 10): Promise<ChallengeResponse> => {
-    const response = await api.get(`/challenges?page"=${page}&limit=${limit}`)
+export const fetchChallenges = async (page = 1, limit = 10, search = "", difficulty = "", category = ""): Promise<ChallengeResponse> => {
+    const params = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+    })
+
+    if (search) params.append("search", search);
+    if (difficulty && difficulty !== "All") params.append("difficulty", difficulty);
+    if (category && category !== "All Topics") params.append("category", category);
+
+    const response = await api.get(`/challenges?${params.toString()}`)
     return response.data
 }
 

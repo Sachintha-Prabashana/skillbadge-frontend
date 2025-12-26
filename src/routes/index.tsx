@@ -1,5 +1,5 @@
 import { lazy, Suspense} from "react"
-import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 
 // import { useAuth } from "../context/authContext"
 

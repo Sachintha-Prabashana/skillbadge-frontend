@@ -11,34 +11,67 @@ import {
     ChevronLeft,
     ChevronRight,
     Calendar,
-    Filter // Added Filter icon for mobile
+    Filter
 } from "lucide-react";
 import { type Challenge, fetchChallenges, fetchDailyChallengeId } from "../services/challenge";
 import DashboardFeatureCards from "../components/DashboardFeatureCards.tsx";
 
-// 1. Reusable Layout Wrapper (You can move this to a separate file later)
+// --- CONSTANTS ---
+const CATEGORIES = [
+    "All Topics", "Array", "String", "Hash Table", "Dynamic Programming",
+    "Math", "Sorting", "Greedy", "Depth-First Search",
+    "Binary Search", "Database", "SQL"
+];
+
 const PageContainer = ({ children }: { children: React.ReactNode }) => (
-    <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full max-w-[1920px] mx-auto">
         {children}
     </div>
 );
 
 export default function Home() {
+    // --- DATA STATE ---
     const [challenges, setChallenges] = useState<Challenge[]>([])
     const [loading, setLoading] = useState(true)
     const [dailyId, setDailyId] = useState<string | null>(null);
     const [page, setPage] = useState(1)
     const [totalPages, setTotalPages] = useState(1)
 
+    // --- FILTER STATE ---
+    const [search, setSearch] = useState("");
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("All Topics");
+    const [selectedDifficulty, setSelectedDifficulty] = useState("All");
+
+    // 1. Debounce Search Logic (Wait 500ms before API call)
     useEffect(() => {
-        // ... (Keep your existing data loading logic)
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1); // Reset to page 1 on new search
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // 2. Data Fetching Effect
+    useEffect(() => {
         const loadData = async () => {
             setLoading(true)
             try {
-                const challengesRes = await fetchChallenges(page);
-                console.log(challengesRes.data);
+                // Pass all filters to the backend service
+                // Note: Ensure your fetchChallenges service signature accepts these params!
+                // fetchChallenges(page, limit, search, difficulty, category)
+                const challengesRes = await fetchChallenges(
+                    page,
+                    10,
+                    debouncedSearch,
+                    selectedDifficulty,
+                    selectedCategory
+                );
+
                 setChallenges(challengesRes.data);
-                setTotalPages(challengesRes.pagination.pages);
+                setTotalPages(challengesRes.pagination.totalPages);
+
+                // Fetch Daily ID separately
                 const id = await fetchDailyChallengeId();
                 setDailyId(id);
             } catch (err) {
@@ -48,30 +81,38 @@ export default function Home() {
             }
         };
         loadData();
-    }, [page]);
+    }, [page, debouncedSearch, selectedDifficulty, selectedCategory]);
 
     const solvedCount = challenges.filter(c => c.status === "SOLVED").length;
 
+    // --- HANDLERS ---
+    const handleCategoryClick = (cat: string) => {
+        setSelectedCategory(cat);
+        setPage(1);
+    };
+
+    const handleDifficultyChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedDifficulty(e.target.value);
+        setPage(1);
+    };
+
     return (
         <PageContainer>
-            {/* responsive GRID SYSTEM:
-               - Mobile: 1 Column (stacked)
-               - Laptop (lg): 3 Columns (Content takes 2)
-               - Desktop (xl): 4 Columns (Content takes 3)
+            {/* GRID LAYOUT:
+                - Mobile/Tablet/Laptop (up to 1279px): 1 Column
+                - Desktop (1280px+): 4 Columns (3 Content + 1 Widget)
             */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 font-['Satoshi',_sans-serif]">
+            <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 font-['Satoshi',_sans-serif]">
 
-                {/* === LEFT COLUMN (Main Content) === */}
-                <div className="lg:col-span-2 xl:col-span-3 space-y-6 order-2 lg:order-1">
+                {/* === LEFT COLUMN (MAIN CONTENT) === */}
+                <div className="xl:col-span-3 space-y-6">
 
-                    {/* Feature Cards - Horizontal Scroll on Mobile */}
-                    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
-                        <div className="min-w-[300px]">
-                            <DashboardFeatureCards />
-                        </div>
+                    {/* 1. Feature Cards Slider (Horizontal Scroll on ALL screens) */}
+                    <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto pb-4 scrollbar-hide">
+                        <DashboardFeatureCards />
                     </div>
 
-                    {/* Topic Stats - Hidden on tiny mobile screens to save space */}
+                    {/* 2. Topic Stats (Hidden on Mobile < 640px) */}
                     <div className="hidden sm:flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-500 font-medium">
                         <TopicStat label="Array" count={2050} />
                         <TopicStat label="String" count={832} />
@@ -83,42 +124,68 @@ export default function Home() {
                         </span>
                     </div>
 
-                    {/* Filter Buttons - Scrollable on Mobile */}
+                    {/* 3. Filter Buttons (Categories) */}
                     <div className="flex items-center gap-2">
-                        <button className="sm:hidden p-2 rounded-lg bg-[#1a1a1a] text-slate-400 border border-[#2a2a2a]">
+                        {/* Mobile Icon */}
+                        <button className="sm:hidden p-2.5 rounded-lg bg-[#1a1a1a] text-slate-400 border border-[#2a2a2a] shrink-0">
                             <Filter className="w-4 h-4" />
                         </button>
+
+                        {/* Scrollable List */}
                         <div className="flex gap-3 overflow-x-auto pb-2 sm:pb-0 -mr-4 pr-4 sm:mr-0 sm:pr-0 scrollbar-hide flex-1">
-                            <FilterButton label="All Topics" active />
-                            <FilterButton label="Algorithms" />
-                            <FilterButton label="Database" />
-                            <FilterButton label="Shell" />
-                            <FilterButton label="Concurrency" />
-                            <FilterButton label="JavaScript" />
+                            {CATEGORIES.map((cat) => (
+                                <button
+                                    key={cat}
+                                    onClick={() => handleCategoryClick(cat)}
+                                    className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                                        selectedCategory === cat
+                                            ? "bg-[#2a2a2a] border-[#3e3e3e] text-white"
+                                            : "bg-[#1a1a1a] border-[#2a2a2a] text-slate-400 hover:bg-[#222]"
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Search & Stats Bar */}
+                    {/* 4. Search Bar & Difficulty Dropdown */}
                     <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+                        {/* Search Input */}
                         <div className="relative flex-1">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                             <input
                                 type="text"
-                                placeholder="Search questions"
-                                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-600"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search questions..."
+                                className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg py-2.5 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-slate-600 transition-all"
                             />
                         </div>
-                        {/* Solved Count - Right on Desktop, Bottom on Mobile */}
-                        <div className="text-sm text-slate-500 font-mono flex items-center justify-between sm:justify-start sm:ml-auto">
-                            <span className="sm:hidden">Progress:</span>
-                            <div>
-                                <span className="text-emerald-500 font-bold mr-1.5">{solvedCount}</span>
-                                Solved
-                            </div>
+
+                        {/* Difficulty Select */}
+                        <div className="relative">
+                            <select
+                                value={selectedDifficulty}
+                                onChange={handleDifficultyChange}
+                                className="appearance-none w-full sm:w-auto bg-[#1a1a1a] border border-[#2a2a2a] text-slate-300 text-sm rounded-lg py-2.5 pl-4 pr-10 focus:outline-none focus:border-slate-600 cursor-pointer hover:bg-[#222] transition-all"
+                            >
+                                <option value="All">All Difficulties</option>
+                                <option value="EASY">Easy</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="HARD">Hard</option>
+                            </select>
+                            <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+
+                        {/* Progress Count (Desktop only) */}
+                        <div className="text-sm text-slate-500 font-mono hidden xl:block ml-2">
+                            <span className="text-emerald-500 font-bold mr-1.5">{solvedCount}</span>
+                            Problem Solved
                         </div>
                     </div>
 
-                    {/* === PROBLEM LIST === */}
+                    {/* 5. Challenge List */}
                     <div className="space-y-1">
                         {loading ? (
                             <div className="py-12 text-center text-slate-500 flex justify-center gap-2">
@@ -135,7 +202,7 @@ export default function Home() {
                                             to={`/challenges/${item._id}`}
                                             className={`flex items-center justify-between p-4 rounded-lg transition-all cursor-pointer group border ${
                                                 isDaily
-                                                    ? "bg-[#1a1a1a]/80 border-amber-500/30 hover:bg-[#1a1a1a] hover:border-amber-500/50 mb-2"
+                                                    ? "bg-[#1a1a1a]/80 border-amber-500/30 hover:bg-[#1a1a1a] hover:border-amber-500/50 mb-2 shadow-lg shadow-amber-900/10"
                                                     : "bg-transparent border-transparent hover:bg-[#1a1a1a]"
                                             }`}
                                         >
@@ -145,7 +212,6 @@ export default function Home() {
                                                 ) : (
                                                     <Circle className="w-5 h-5 text-slate-600 group-hover:text-slate-500 shrink-0" />
                                                 )}
-
                                                 <div className="flex flex-col min-w-0">
                                                     {isDaily && (
                                                         <span className="flex items-center gap-1 text-[10px] text-amber-500 font-bold uppercase tracking-wider mb-0.5">
@@ -155,11 +221,18 @@ export default function Home() {
                                                     <span className={`font-medium text-sm truncate ${isSolved ? "text-slate-500" : "text-slate-200 group-hover:text-blue-400"}`}>
                                                         {item.title}
                                                     </span>
+                                                    {/* Optional: Show category tags below title */}
+                                                    {item.categories && item.categories.length > 0 && (
+                                                        <div className="flex gap-1 mt-1">
+                                                            {item.categories.slice(0, 2).map((cat, i) => (
+                                                                <span key={i} className="text-[10px] bg-[#2a2a2a] text-slate-400 px-1.5 rounded">{cat}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
-
                                             <div className="flex items-center gap-3 sm:gap-6 shrink-0 ml-2">
-                                                {/* Hide acceptance rate on mobile */}
+                                                {/* Hidden on 425px Mobile */}
                                                 <span className="text-xs text-slate-500 hidden sm:block">
                                                     {Math.floor(Math.random() * (80 - 40) + 40)}%
                                                 </span>
@@ -169,36 +242,43 @@ export default function Home() {
                                         </Link>
                                     );
                                 })}
+
+                                {challenges.length === 0 && (
+                                    <div className="py-12 text-center text-slate-500">
+                                        No challenges found matching your filters.
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>
 
-                    {/* Pagination */}
+                    {/* 6. Pagination */}
                     <div className="flex items-center justify-between pt-6 border-t border-[#2a2a2a] mt-4">
-                        <span className="text-sm text-slate-500">
-                            Page {page} of {totalPages}
-                        </span>
+                        <span className="text-sm text-slate-500">Page {page} of {totalPages}</span>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
                                 className="p-2 rounded-lg bg-[#282828] text-white hover:bg-[#3e3e3e] disabled:opacity-50"
                             >
-                                <ChevronLeft className="w-4 h-4" />
+                                <ChevronLeft className="w-4 h-4"/>
                             </button>
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages}
                                 className="p-2 rounded-lg bg-[#282828] text-white hover:bg-[#3e3e3e] disabled:opacity-50"
                             >
-                                <ChevronRight className="w-4 h-4" />
+                                <ChevronRight className="w-4 h-4"/>
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* === RIGHT COLUMN (Widgets) === */}
-                <div className="space-y-6 order-1 lg:order-2 lg:col-span-1">
+                {/* === RIGHT COLUMN (WIDGETS) === */}
+                {/* - hidden: Hides on default (Mobile 425px)
+                    - sm:block: Shows on Tablet/Laptop/Desktop
+                */}
+                <div className="hidden sm:block space-y-6 xl:col-span-1">
 
                     {/* Calendar Widget */}
                     <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a]">
@@ -209,7 +289,6 @@ export default function Home() {
                                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
                             </div>
                         </div>
-                        {/* Calendar Grid - Keep text tiny on mobile */}
                         <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] text-slate-500 mb-2">
                             <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
                         </div>
@@ -224,8 +303,8 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* Trending Companies - Hidden on Mobile */}
-                    <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a] hidden sm:block">
+                    {/* Trending Companies */}
+                    <div className="bg-[#1a1a1a] rounded-xl p-5 border border-[#2a2a2a]">
                         <div className="flex justify-between items-center mb-4">
                             <div className="text-sm font-bold text-white">Trending Companies</div>
                             <ChevronDown className="w-4 h-4 text-slate-500" />
@@ -243,38 +322,16 @@ export default function Home() {
     );
 }
 
-// Subcomponents (kept the same)
-function FilterButton({ label, active }: { label: string, active?: boolean }) {
-    return (
-        <button className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-            active ? "bg-[#2a2a2a] border-[#3e3e3e] text-white" : "bg-[#1a1a1a] border-[#2a2a2a] text-slate-400"
-        }`}>
-            {label}
-        </button>
-    );
-}
-
+// --- SUBCOMPONENTS ---
 function TopicStat({ label, count }: { label: string, count: number }) {
-    return (
-        <span className="cursor-pointer hover:text-slate-300 transition-colors">
-            {label} <span className="text-slate-600 ml-0.5">{count}</span>
-        </span>
-    );
+    return <span className="cursor-pointer hover:text-slate-300 transition-colors">{label} <span className="text-slate-600 ml-0.5">{count}</span></span>;
 }
 
 function CompanyTag({ name, count }: { name: string, count: number }) {
-    return (
-        <span className="px-2 py-1 bg-[#2a2a2a] rounded-full text-[10px] text-slate-300 flex items-center gap-1 cursor-pointer hover:bg-[#3e3e3e] border border-transparent hover:border-slate-600">
-            {name} <span className="text-slate-500 bg-[#121212] px-1.5 rounded">{count}</span>
-        </span>
-    )
+    return <span className="px-2 py-1 bg-[#2a2a2a] rounded-full text-[10px] text-slate-300 flex items-center gap-1 cursor-pointer hover:bg-[#3e3e3e] border border-transparent hover:border-slate-600">{name} <span className="text-slate-500 bg-[#121212] px-1.5 rounded">{count}</span></span>
 }
 
 function DifficultyBadge({ level }: { level: string }) {
     const colors: any = { EASY: "text-emerald-500", MEDIUM: "text-amber-500", HARD: "text-red-500" };
-    return (
-        <span className={`text-xs font-bold w-12 text-right ${colors[level] || "text-slate-500"}`}>
-            {level === "MEDIUM" ? "Med." : level}
-        </span>
-    );
+    return <span className={`text-xs font-bold w-12 text-right ${colors[level] || "text-slate-500"}`}>{level === "MEDIUM" ? "Med." : level}</span>;
 }
