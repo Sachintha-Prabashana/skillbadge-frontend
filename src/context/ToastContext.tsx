@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from "lucide-react";
 
-// 1. Define Types
+// 1. Types
 type ToastType = "success" | "error" | "info" | "warning";
 
 interface Toast {
@@ -23,7 +23,6 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
     const showToast = useCallback((message: string, type: ToastType) => {
         const id = Date.now();
-
         // Add new toast
         setToasts((prev) => [...prev, { id, message, type }]);
 
@@ -41,8 +40,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         <ToastContext.Provider value={{ showToast }}>
             {children}
 
-            {/* FLOATING TOAST CONTAINER (Fixed position) */}
-            <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">
+            {/* --- FIXED TOP-RIGHT CONTAINER --- */}
+            <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none items-end">
                 {toasts.map((toast) => (
                     <div
                         key={toast.id}
@@ -53,14 +52,16 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                                         "bg-blue-500/10 border-blue-500/20 text-blue-500"
                         }`}
                     >
-                        {/* Icons based on type */}
+                        {/* Icons */}
                         {toast.type === "success" && <CheckCircle className="w-5 h-5 shrink-0" />}
                         {toast.type === "error" && <AlertCircle className="w-5 h-5 shrink-0" />}
                         {toast.type === "warning" && <AlertTriangle className="w-5 h-5 shrink-0" />}
                         {toast.type === "info" && <Info className="w-5 h-5 shrink-0" />}
 
+                        {/* Message */}
                         <span className="text-sm font-medium flex-1">{toast.message}</span>
 
+                        {/* Close Button */}
                         <button onClick={() => removeToast(toast.id)} className="hover:opacity-70 transition-opacity">
                             <X className="w-4 h-4" />
                         </button>
@@ -71,7 +72,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     );
 }
 
-// 4. Custom Hook for easy usage
+// 4. Hook
 export const useToast = () => {
     const context = useContext(ToastContext);
     if (!context) throw new Error("useToast must be used within a ToastProvider");

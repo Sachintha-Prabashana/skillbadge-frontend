@@ -4,8 +4,10 @@ import { Eye, EyeOff, Github, Linkedin } from "lucide-react"
 import { login, fetchProfile } from "../services/auth"
 import { useAuth } from "../context/authContext"
 import SocialLogin from "../components/SocialLogin.tsx";
+import {useToast} from "../context/ToastContext.tsx";
 
 export default function Login() {
+    const { showToast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [email, setEmail] = useState("")
@@ -16,6 +18,11 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+
+      if (!email.trim() || !password.trim()) {
+          showToast("Please enter both email and password.", "warning");
+          return;
+      }
     setIsLoading(true)
     // Simulate API call
 
@@ -37,6 +44,7 @@ export default function Login() {
 
 
         setUser(currentUser)
+          showToast(`Welcome back, ${currentUser.firstname}!`, "success")
         console.log("loggin Success: ", currentUser)
 
 
@@ -47,13 +55,41 @@ export default function Login() {
               navigate("/dashboard");
           }
       }else {
-        alert("Login failed, please check your credentials.")
+          showToast("Login failed. Please check your credentials.", "error")
       }
 
 
-    }catch (err) {
-      console.log("loggin error: ", err)
-      alert("An error occurred during login. Please try again.")
+    }catch (err: any) {
+        console.error("Login error: ", err);
+
+        // ---  ROBUST ERROR HANDLING  ---
+        const data = err.response?.data;
+        const status = err.response?.status;
+
+        //  HANDLING THE SPECIFIC ERRORS
+
+        // Case A: User Not Found / Wrong Password (Status 400)
+        // This handles the "if (!existingUser)" check from your backend
+        if (status === 400) {
+            // "Invalid email or password" comes from data.message
+            showToast(data?.message || "Invalid credentials.", "error");
+        }
+
+        // Case B: Banned User (Status 403)
+        else if (status === 403) {
+            showToast("Access Denied: Your account has been suspended.", "error");
+        }
+
+        // Case C: Social Login Attempt (Status 400 + specific code)
+        else if (data?.error_code === "SOCIAL_LOGIN") {
+            showToast("⚠️ This account uses Google.", "info");
+            showToast("Please use the Google button below.", "info");
+        }
+
+        // Case D: Server Crash / Network Error (Status 500 or no status)
+        else {
+            showToast("Something went wrong. Please try again later.", "error");
+        }
     }
     setTimeout(() => setIsLoading(false), 2000)
   }
@@ -73,7 +109,7 @@ export default function Login() {
       </div>
 
       {/* --- Main Form --- */}
-      <form onSubmit={handleLogin} className="space-y-6">
+      <form onSubmit={handleLogin} className="space-y-6" noValidate>
         
         {/* Email Field */}
         <div className="space-y-2">
