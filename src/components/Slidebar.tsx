@@ -3,7 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, Terminal, Trophy, MessageSquare, Settings, LogOut, List, Layers, Zap, X } from "lucide-react";
 import { logout } from "../services/auth";
 import { useAuth } from "../context/authContext";
-import { useSidebar } from "../context/SidebarContext"; // Import Context
+import { useSidebar } from "../context/SidebarContext";
+import Logo from "./Logo.tsx"; // Import Context
 
 export default function Sidebar() {
     const location = useLocation();
@@ -43,12 +44,10 @@ export default function Sidebar() {
 
                 {/* --- LOGO & CLOSE BUTTON --- */}
                 <div className="h-16 flex items-center justify-between px-6">
-                    <div className="flex items-center gap-2 text-white font-bold text-xl tracking-tight">
-                        <div className="bg-amber-500 p-1 rounded">
-                            <Terminal className="w-5 h-5 text-black" />
-                        </div>
-                        <span>CodeRank</span>
-                    </div>
+                    {/* 2. USE THE LOGO COMPONENT */}
+                    <Link to="/dashboard" onClick={closeSidebar}>
+                        <Logo className="w-8 h-8" textClassName="text-xl" />
+                    </Link>
                     {/* Close Button (Mobile Only) */}
                     <button onClick={closeSidebar} className="lg:hidden text-slate-400 hover:text-white">
                         <X className="w-6 h-6" />

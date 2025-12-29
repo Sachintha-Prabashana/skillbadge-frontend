@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Search, Bell, ShoppingBag, LogOut, List, TrendingUp, Settings, ChevronDown, Menu } from "lucide-react";
+import { Search, Bell, ShoppingBag, LogOut, List, TrendingUp, Settings, Menu } from "lucide-react";
 import { useAuth } from "../context/authContext.tsx";
 import { useSidebar } from "../context/SidebarContext"; // Import Context
 
