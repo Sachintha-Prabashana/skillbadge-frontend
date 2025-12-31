@@ -1,4 +1,3 @@
-import React from "react";
 import { Crown } from "lucide-react";
 import { type LeaderboardUser } from "../services/user.ts"; // Import the type
 

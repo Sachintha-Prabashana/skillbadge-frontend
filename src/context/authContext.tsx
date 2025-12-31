@@ -14,15 +14,6 @@ export interface User {
     // Add other fields as needed based on your Mongoose Schema
 }
 
-// 2. Define the Context Type
-interface AuthContextType {
-    user: User | null;
-    loading: boolean;
-    refreshUser: () => Promise<void>;
-    updateUser: (updates: Partial<User>) => void; // <--- NEW: For optimistic updates
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
-}
-
 export const AuthProvider = ( { children }: any ) => {
     const [ user, setUser ] = useState<User | any>(null)
     const [ loading, setLoading ] = useState(true)

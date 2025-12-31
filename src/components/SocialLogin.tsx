@@ -1,6 +1,4 @@
-import React from "react";
-import { Github, Linkedin } from "lucide-react";
-import {initiateGithubLogin, initiateGoogleLogin} from "../services/auth.ts";
+import { initiateGithubLogin, initiateGoogleLogin } from "../services/auth.ts";
  // Your service
 
 // Define the Prop Type

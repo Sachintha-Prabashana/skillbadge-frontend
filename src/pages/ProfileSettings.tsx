@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
     User as UserIcon, Globe, GraduationCap,
-    Save, Loader2, Plus, Trash2, Github, Linkedin, Layout, Twitter,
-    ChevronRight, Sparkles
+    Save, Loader2, Plus, Trash2, Github, Linkedin, Layout,
+    ChevronRight
 } from "lucide-react";
 import {useAuth} from "../context/authContext.tsx";
 import {useToast} from "../context/ToastContext.tsx";

@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff, Github, Linkedin } from "lucide-react"
+import { Eye, EyeOff } from "lucide-react"
 import { login, fetchProfile } from "../services/auth"
 import { useAuth } from "../context/authContext"
 import SocialLogin from "../components/SocialLogin.tsx";

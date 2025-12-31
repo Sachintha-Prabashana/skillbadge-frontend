@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
     Trophy,
@@ -11,8 +10,7 @@ import {
     ChevronRight,
     Terminal,
     Github,
-    Heart,
-    Code2
+    Heart
 } from "lucide-react";
 
 export default function LandingPage() {

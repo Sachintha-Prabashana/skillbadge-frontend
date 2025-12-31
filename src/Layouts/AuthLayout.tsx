@@ -1,6 +1,5 @@
-import React from "react"
 import { Outlet, Link } from "react-router-dom"
-import { Code2, Terminal } from "lucide-react"
+import { Code2 } from "lucide-react"
 
 export default function AuthLayout() {
   return (

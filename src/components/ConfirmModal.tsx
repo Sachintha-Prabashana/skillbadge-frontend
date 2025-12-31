@@ -13,16 +13,16 @@ interface ConfirmModalProps {
 }
 
 export default function ConfirmModal({
-                                         isOpen,
-                                         onClose,
-                                         onConfirm,
-                                         title,
-                                         message,
-                                         confirmText = "Confirm",
-                                         cancelText = "Cancel",
-                                         isLoading = false,
-                                         variant = "danger",
-                                     }: ConfirmModalProps) {
+    isOpen,
+    onClose,
+    onConfirm,
+    title,
+    message,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
+    isLoading = false,
+    variant = "danger",
+}: ConfirmModalProps) {
     if (!isOpen) return null;
 
     // specific styles based on variant

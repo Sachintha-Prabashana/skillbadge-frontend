@@ -1,6 +1,3 @@
-import React from "react";
-import { CheckCircle2 } from "lucide-react";
-
 interface SolvedStats {
     total: number;
     totalQuestions: number;

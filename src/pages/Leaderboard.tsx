@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Trophy, Medal, Flame, Crown, Loader2, Award, User, Star, Zap, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Flame, Crown, Loader2, Award, Star, Zap, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { fetchLeaderboard, type LeaderboardUser } from "../services/user.ts";
 import PodiumCard from "../components/PodiumCard.tsx";

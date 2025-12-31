@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import Confetti from "react-confetti";
 import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
-import { X, ArrowRight, Zap, CheckCircle2, Shuffle, Loader2 } from "lucide-react"; // Added Shuffle & Loader2
+import { X, Zap, CheckCircle2, Shuffle, Loader2 } from "lucide-react"; // Added Shuffle & Loader2
 import { fetchRandomChallenge } from "../services/challenge"; // Import the service
 
 export default function SuccessModal({ onClose, points }: { onClose: () => void, points: number }) {
     const navigate = useNavigate();
-    const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+    const [windowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
     // State for the "Next" button loading
     const [loadingNext, setLoadingNext] = useState(false);

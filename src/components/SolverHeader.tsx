@@ -1,10 +1,8 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import {
     ChevronLeft,
     List,
     Settings,
-    Bot, // Icon for AI
     Sparkles, // Alternative Icon
     Timer
 } from "lucide-react";

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Flame, Trophy, ArrowRight, BookOpen, Shuffle, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchDailyChallengeId, fetchRandomChallenge } from "../services/challenge.ts";

@@ -1,6 +1,5 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Terminal, Trophy, MessageSquare, Settings, LogOut, List, Layers, Zap, X } from "lucide-react";
+import { LayoutDashboard, Trophy, MessageSquare, Settings, LogOut, Zap, X } from "lucide-react";
 import { logout } from "../services/auth";
 import { useAuth } from "../context/authContext";
 import { useSidebar } from "../context/SidebarContext";

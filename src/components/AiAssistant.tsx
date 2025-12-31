@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { X, Sparkles, Send, Bot, User } from "lucide-react";
+import { X, Sparkles, Bot, User } from "lucide-react";
 import { getChallengeHint } from "../services/challenge.ts";
 import {useAuth} from "../context/authContext.tsx";
 
-interface UserType {
-    _id: string;
-    points: number;
-    [key: string]: any;
-}
 
 interface Props {
     isOpen: boolean;
