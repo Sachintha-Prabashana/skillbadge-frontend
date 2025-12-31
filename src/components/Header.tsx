@@ -42,7 +42,6 @@ export default function Header() {
             {/* CENTER: Navigation (Hidden on Tablet/Mobile) */}
             <nav className="hidden xl:flex items-center gap-8 text-sm font-medium text-slate-400">
                 <Link to="/dashboard" className={isActive('/dashboard')}>Challenges</Link>
-                <Link to="/learn" className={isActive('/learn')}>Learn</Link>
                 <Link to="/discuss" className={isActive('/discuss')}>Discuss</Link>
                 <Link to="/contest/live" className={isActive('/contests')}>Contests</Link>
                 <Link to="/leaderboard" className={isActive('/leaderboard')}>Leaderboard</Link>

@@ -15,9 +15,7 @@ export default function Sidebar() {
         {
             title: "MENU",
             items: [
-                { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-                { icon: List, label: "All Problems", path: "/challenges" },
-                { icon: Layers, label: "Study Plans", path: "/learn" },
+                { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" }
             ]
         },
         {
