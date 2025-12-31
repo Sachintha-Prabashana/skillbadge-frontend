@@ -40,7 +40,7 @@ export default function PostDetails() {
 
         loadData();
 
-        const socket = io("http://localhost:5000");
+        const socket = io(import.meta.env.VITE_API_URL);
         socket.emit("join_post", id);
         socket.on("receive_comment", (c) => setComments(prev => [c, ...prev]));
         return () => { socket.disconnect() };

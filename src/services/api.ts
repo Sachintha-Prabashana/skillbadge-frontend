@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios"
 import { refreshTokens } from "./auth"
 
 const api = axios.create({
-    baseURL: "http://localhost:5000/api/v1",
+    baseURL: "https://controlled-karina-spsolutions-ea693d09.koyeb.app/api/v1",
 })
 
 
