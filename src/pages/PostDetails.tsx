@@ -4,7 +4,7 @@ import {
     ArrowLeft, Loader2, MessageSquare,
     Code, Link as LinkIcon, AtSign, MoreHorizontal
 } from "lucide-react";
-import { io } from "socket.io-client";
+import { socket } from "../socket"
 import { fetchComments, addComment, fetchPostById, type Comment, type Post } from "../services/discuss";
 import { useToast } from "../context/ToastContext";
 
@@ -40,10 +40,22 @@ export default function PostDetails() {
 
         loadData();
 
-        const socket = io(import.meta.env.VITE_API_URL);
+        //  CHANGE 2: Use the singleton socket connection
+        socket.connect(); // 1. Connect
+
+        console.log("Joining post room:", id)
         socket.emit("join_post", id);
-        socket.on("receive_comment", (c) => setComments(prev => [c, ...prev]));
-        return () => { socket.disconnect() };
+        // 3. Listen for new comments
+        const handleNewComment = (c: Comment) => {
+            setComments(prev => [c, ...prev]);
+        }
+
+        socket.on("receive_comment", handleNewComment)
+        //  CHANGE 3: Cleanup properly
+        return () => {
+            socket.off("receive_comment", handleNewComment); // Stop listening
+            // socket.disconnect(); // Optional: Only use if you want to kill the connection entirely
+        }
     }, [id, showToast]);
 
     const handleSubmit = async (e: React.FormEvent) => {

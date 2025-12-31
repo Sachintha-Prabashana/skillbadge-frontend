@@ -4,7 +4,7 @@ import {
     MessageSquare, Search, TrendingUp, Plus, ArrowUpCircle,
     MessageCircle, Briefcase, Code2, Hash, X, Loader2
 } from "lucide-react";
-import { io } from "socket.io-client";
+import { socket } from "../socket"
 import { createPost, fetchPosts, toggleVote, type Post } from "../services/discuss";
 import { useToast } from "../context/ToastContext";
 
@@ -44,24 +44,35 @@ export default function Discuss() {
 
     // WebSocket Connection
     useEffect(() => {
-        const socket = io(import.meta.env.VITE_API_URL);
+        // 1. Connect
+        socket.connect();
 
-        socket.on("new_post", (newPost: Post) => {
+        // 2. Define Handlers (so we can remove them later)
+        const handleNewPost = (newPost: Post) => {
             setPosts((prevPosts) => {
                 const exists = prevPosts.some(p => p._id === newPost._id);
                 if (exists) return prevPosts;
                 showToast("New discussion started!", "info");
                 return [newPost, ...prevPosts];
             });
-        });
+        };
 
-        socket.on("vote_update", ({ postId, newCount }: { postId: string, newCount: number }) => {
+        const handleVoteUpdate = ({ postId, newCount }: { postId: string, newCount: number }) => {
             setPosts(prev => prev.map(p =>
                 p._id === postId ? { ...p, voteCount: newCount } : p
             ));
-        });
+        };
 
-        return () => { socket.disconnect(); };
+        // 3. Attach Listeners
+        socket.on("new_post", handleNewPost);
+        socket.on("vote_update", handleVoteUpdate);
+
+        // 4. Cleanup (Remove listeners when leaving page)
+        return () => {
+            socket.off("new_post", handleNewPost);
+            socket.off("vote_update", handleVoteUpdate);
+            // socket.disconnect(); // Optional: Uncomment if you want to close connection on leave
+        };
     }, [showToast]);
 
     const handleVote = async (e: React.MouseEvent, postId: string) => {
