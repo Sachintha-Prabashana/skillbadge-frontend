@@ -10,9 +10,6 @@ import DashboardLayout from "../Layouts/DashboardLayout.tsx"
 import Leaderboard from "../pages/Leaderboard.tsx"
 import Profile from "../pages/Profile.tsx"
 
-
-
-
 const Index = lazy(() => import("../pages/Index"))
 const Login = lazy(() => import("../pages/Login"))
 const Register = lazy(() => import("../pages/Register"))
@@ -29,6 +26,8 @@ const ProfileSettings = lazy(() => import("../pages/ProfileSettings.tsx"))
 const ContestLive = lazy(() => import("../components/ContestLive.tsx"));
 const Discuss = lazy(() => import("../pages/Discuss.tsx"));
 const PostDetails = lazy(() => import("../pages/PostDetails.tsx"));
+const ForgotPassword = lazy(() => import("../pages/ForgotPassword.tsx"));
+const ResetPassword = lazy(() => import("../pages/ResetPassword.tsx"));
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
@@ -81,6 +80,8 @@ export default function Router() {
             {/* This matches the /challenges/:id link from the dashboard */}
             <Route path="/challenges/:id" element={<ChallengeSolver />} />
             <Route path="/auth-success" element={<AuthSuccess />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
 
 
