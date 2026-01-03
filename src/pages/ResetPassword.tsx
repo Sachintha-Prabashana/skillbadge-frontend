@@ -50,7 +50,7 @@ export default function ResetPassword() {
 
     } catch (err: any) {
       console.error(err);
-      const msg = err.response?.data?.message || "Link expired or invalid.";
+      const msg = err.response?.data?.message;
       showToast(msg, "error");
     } finally {
       setIsLoading(false);
