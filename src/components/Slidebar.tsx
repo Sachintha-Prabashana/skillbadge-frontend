@@ -43,7 +43,7 @@ export default function Sidebar() {
                 <div className="h-16 flex items-center justify-between px-6">
                     {/* 2. USE THE LOGO COMPONENT */}
                     <Link to="/dashboard" onClick={closeSidebar}>
-                        <Logo className="w-8 h-8" textClassName="text-xl" />
+                        <Logo theme="dark"/>
                     </Link>
                     {/* Close Button (Mobile Only) */}
                     <button onClick={closeSidebar} className="lg:hidden text-slate-400 hover:text-white">
