@@ -1,10 +1,12 @@
-import React, { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff } from "lucide-react"
-import { register } from "../services/auth"
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
+import { register } from "../services/auth";
 import SocialLogin from "../components/SocialLogin";
+import { useToast } from "../context/ToastContext"; // <--- 1. Import Toast Context
 
 export default function Register() {
+  const { showToast } = useToast(); // <--- 2. Initialize Hook
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -13,7 +15,7 @@ export default function Register() {
     lastName: "",
     email: "",
     password: ""
-  })
+  });
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -25,26 +27,33 @@ export default function Register() {
   };
 
   const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    setIsLoading(true);
 
     try {
-      const data = await register(
+      await register(
         formData.firstName,
         formData.lastName,
         formData.email,
         formData.password
-      )
-      // Ideally replace this alert with useToast() like in Login.tsx
-      alert("Registration successful! Please log in.")
-      navigate("/login")
+      );
+
+      // ✅ 3. Success Toast
+      showToast("Registration successful! Please log in.", "success");
       
-    } catch (err) {
-      console.log("Registration error: ", err)
-      alert("An error occurred during registration. Please try again.")
+      // Slight delay to let user read the toast before redirecting
+      setTimeout(() => navigate("/login"), 1000);
+
+    } catch (err: any) {
+      console.error("Registration error: ", err);
+      
+      // ✅ 4. Error Toast (captures backend error message if available)
+      const errorMessage = err.response?.data?.message || "An error occurred during registration.";
+      showToast(errorMessage, "error");
+    } finally {
+      setIsLoading(false);
     }
-    setTimeout(() => setIsLoading(false), 2000)
-  }
+  };
 
   return (
     <div className="w-full max-w-[420px] mx-auto font-['Satoshi',_sans-serif]">
@@ -161,5 +170,5 @@ export default function Register() {
         <a href="#" className="text-[#0E141E] hover:underline ml-1"> Privacy Policy</a>.
       </div>
     </div>
-  )
+  );
 }

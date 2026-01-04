@@ -1,6 +1,4 @@
-import React from "react";
 import { Terminal, Code2, Sparkles } from "lucide-react";
-import { cn } from "../../utils/cn"; // Assuming you have a class merger, or use standard string interpolation
 
 interface LogoProps {
   theme?: "light" | "dark";

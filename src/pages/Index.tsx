@@ -1,8 +1,7 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { 
   ChevronRight, Terminal, Cpu, ShieldCheck, 
-  Zap, Globe, CheckCircle2, ArrowRight, Code, Trophy
+  Zap, Globe, CheckCircle2, Code, Trophy
 } from "lucide-react";
 import { motion } from "framer-motion";
 
