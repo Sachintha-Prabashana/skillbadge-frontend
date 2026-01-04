@@ -49,7 +49,7 @@ export default function ResetPassword() {
 
     } catch (err: any) {
       console.error(err);
-      const msg = err.response?.data?.message || "Failed to reset password.";
+      const msg = err.response?.data?.message;
       showToast(msg, "error");
     } finally {
       setIsLoading(false);
