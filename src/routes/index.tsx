@@ -28,6 +28,7 @@ const Discuss = lazy(() => import("../pages/Discuss.tsx"));
 const PostDetails = lazy(() => import("../pages/PostDetails.tsx"));
 const ForgotPassword = lazy(() => import("../pages/ForgotPassword.tsx"));
 const ResetPassword = lazy(() => import("../pages/ResetPassword.tsx"));
+const MyLists = lazy(() => import("../pages/MyLists.tsx"));
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
@@ -69,6 +70,7 @@ export default function Router() {
                 {/* Matches /profile (me) AND /profile/123 (others) */}
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:id" element={<Profile />} />
+                <Route path="/lists" element={<MyLists />} />
                 <Route path="/profile/me/settings" element={<ProfileSettings />} />
                 <Route path="/contest/live" element={<ContestLive />}/>
                 <Route path="/discuss" element={<Discuss />} />

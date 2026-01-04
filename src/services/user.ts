@@ -85,3 +85,8 @@ export const updateProfileSettings = async (formData: any) => {
     const response = await  api.put("/users/me/profile", formData)
     return response.data
 }
+
+export const fetchMySolvedChallenges = async () => {
+    const response = await api.get("/users/my/lists/solved")
+    return response.data
+}
