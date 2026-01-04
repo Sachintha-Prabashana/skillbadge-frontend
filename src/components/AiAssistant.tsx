@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { X, Sparkles, Bot, User } from "lucide-react";
 import { getChallengeHint } from "../services/challenge.ts";
-import {useAuth} from "../context/authContext.tsx";
-
+import { useAuth } from "../context/authContext.tsx";
 
 interface Props {
     isOpen: boolean;
@@ -11,7 +10,6 @@ interface Props {
     challengeId: string;
     code: string;
     language: string;
-
 }
 
 interface Message {
@@ -21,6 +19,7 @@ interface Message {
 
 export default function AiAssistant({ isOpen, onClose, challengeId, code, language }: Props) {
     const { user, updateUser } = useAuth();
+    const scrollRef = useRef<HTMLDivElement>(null); // Ref for auto-scrolling
 
     const [messages, setMessages] = useState<Message[]>([
         { role: "ai", content: "Hi! I'm your coding coach. Stuck? I can give you a hint for 5 XP." }
@@ -29,50 +28,41 @@ export default function AiAssistant({ isOpen, onClose, challengeId, code, langua
 
     const XP_COST = 5;
 
+    // --- Auto-scroll to bottom when messages change ---
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages, isOpen]);
+
     const handleAskHint = async () => {
-        // 1. Validation
         if (!user) return;
 
-        // Safety check: Ensure we don't go negative
+        // Safety check
         if (user.points < XP_COST) {
             setMessages(prev => [...prev, { role: "ai", content: "You don't have enough XP for a hint!" }]);
             return;
         }
 
         setLoading(true);
-
-        // 2. SNAPSHOT (Save current points for rollback)
         const previousPoints = user.points;
 
-        // 3. OPTIMISTIC UPDATE (Fast UX)
-        // Instantly subtract points in the UI so the user sees the change immediately
+        // Optimistic UI Update
         updateUser({ points: user.points - XP_COST });
-
-        // Add user message to chat immediately
-        setMessages(prev => [...prev, { role: "user", content: "Can you give me a hint based on my code?" } as Message]);
+        setMessages(prev => [...prev, { role: "user", content: "Can you give me a hint based on my code?" }]);
 
         try {
-            // 4. API CALL
-            // Ensure your getChallengeHint service returns { hint, remainingPoints, cost }
             const data = await getChallengeHint(challengeId, code, language);
 
-            // 5. AUTHORITATIVE SYNC (The Fix)
-            // Overwrite our "guess" with the actual remaining points from the database.
-            // This ensures the frontend is 100% in sync with the server.
             if (data.remainingPoints !== undefined) {
                 updateUser({ points: data.remainingPoints });
             }
 
-            // Add AI response
             setMessages(prev => [...prev, { role: "ai", content: data.hint }]);
 
         } catch (error: any) {
             console.error("Hint failed:", error);
-
-            // 6. ROLLBACK (Critical)
-            // If the server failed (e.g. 500 error), give the points back!
-            updateUser({ points: previousPoints });
-
+            updateUser({ points: previousPoints }); // Rollback points
             setMessages(prev => [...prev, {
                 role: "ai",
                 content: error.response?.data?.message || "Sorry, I couldn't reach the server. Points refunded."
@@ -85,28 +75,42 @@ export default function AiAssistant({ isOpen, onClose, challengeId, code, langua
     if (!isOpen) return null;
 
     return (
-        <div className="absolute top-12 bottom-0 right-0 w-96 bg-[#1e1e1e] border-l border-[#3e3e3e] shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300">
+        // --- Responsive Container ---
+        // 1. top-14: Starts exactly below SolverHeader (h-14)
+        // 2. w-full md:w-96: Full width on mobile, Fixed width sidebar on Desktop
+        <div className="absolute top-14 bottom-0 right-0 w-full md:w-96 bg-[#1e1e1e] border-l border-[#3e3e3e] shadow-2xl z-40 flex flex-col animate-in slide-in-from-right duration-300">
 
             {/* --- Header --- */}
-            <div className="h-12 border-b border-[#3e3e3e] flex items-center justify-between px-4 bg-[#252526]">
+            <div className="h-12 border-b border-[#3e3e3e] flex items-center justify-between px-4 bg-[#252526] shrink-0">
                 <div className="flex items-center gap-2 text-indigo-400 font-bold">
                     <Sparkles className="w-4 h-4" /> AI Coach
                 </div>
-                <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
+                <button 
+                    onClick={onClose} 
+                    className="p-1.5 text-slate-400 hover:text-white hover:bg-[#3e3e3e] rounded-md transition-colors"
+                >
                     <X className="w-5 h-5" />
                 </button>
             </div>
 
             {/* --- Chat Area --- */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            <div 
+                ref={scrollRef}
+                className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[#1e1e1e]"
+            >
                 {messages.map((msg, idx) => (
                     <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                        {/* Avatar */}
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'ai' ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-700 text-slate-300'}`}>
                             {msg.role === 'ai' ? <Bot className="w-4 h-4" /> : <User className="w-4 h-4" />}
                         </div>
-                        <div className={`p-3 rounded-xl text-sm max-w-[80%] ${msg.role === 'ai' ? 'bg-[#2a2a2a] text-slate-200' : 'bg-indigo-600 text-white'}`}>
+                        
+                        {/* Bubble */}
+                        <div className={`p-3 rounded-xl text-sm max-w-[85%] leading-relaxed ${msg.role === 'ai' ? 'bg-[#2a2a2a] text-slate-200' : 'bg-indigo-600 text-white'}`}>
                             {msg.role === 'ai' ? (
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                <div className="prose prose-invert prose-sm max-w-none">
+                                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                </div>
                             ) : (
                                 msg.content
                             )}
@@ -114,9 +118,9 @@ export default function AiAssistant({ isOpen, onClose, challengeId, code, langua
                     </div>
                 ))}
 
-                {/* Loading Bubble */}
+                {/* Loading Indicator */}
                 {loading && (
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 animate-pulse">
                         <div className="w-8 h-8 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
                             <Bot className="w-4 h-4" />
                         </div>
@@ -130,31 +134,38 @@ export default function AiAssistant({ isOpen, onClose, challengeId, code, langua
             </div>
 
             {/* --- Input Area (Gamified) --- */}
-            <div className="p-4 border-t border-[#3e3e3e] bg-[#252526]">
-                <div className="flex flex-col gap-2">
-                    <p className="text-xs text-center text-slate-500 mb-2">
-                        Asking for a hint costs <span className="text-amber-500 font-bold">5 XP</span>
-                    </p>
+            <div className="p-4 border-t border-[#3e3e3e] bg-[#252526] shrink-0 pb-6 md:pb-4">
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                        <span>Hint Cost</span>
+                        <span className="text-amber-500 font-bold flex items-center gap-1">
+                            5 XP
+                        </span>
+                    </div>
+                    
                     <button
                         onClick={handleAskHint}
                         disabled={loading || !code.trim() || (user?.points || 0) < XP_COST}
                         className={`
-                            w-full py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg
+                            w-full py-3 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98]
                             ${(user?.points || 0) < XP_COST
-                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
+                            ? "bg-red-500/10 text-red-400 border border-red-500/20 cursor-not-allowed"
                             : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20"}
                         `}
                     >
                         {loading ? "Analyzing Code..." : (
                             <>
-                                <Sparkles className="w-4 h-4" /> Generate Hint
+                                <Sparkles className="w-4 h-4" /> 
+                                {(user?.points || 0) < XP_COST ? "Not Enough XP" : "Generate Hint"}
                             </>
                         )}
                     </button>
+                    
                     {(user?.points || 0) < XP_COST && (
-                        <p className="text-[10px] text-red-400 text-center">Not enough XP!</p>
+                        <p className="text-[10px] text-red-400 text-center">
+                            You need {XP_COST - (user?.points || 0)} more XP. Try solving easier problems first!
+                        </p>
                     )}
-
                 </div>
             </div>
         </div>

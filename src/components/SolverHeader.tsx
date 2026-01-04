@@ -3,13 +3,13 @@ import {
     ChevronLeft,
     List,
     Settings,
-    Sparkles, // Alternative Icon
+    Sparkles,
     Timer
 } from "lucide-react";
 
 interface Props {
     title?: string;
-    onAiClick: () => void; // Trigger for AI Modal/Sidebar
+    onAiClick: () => void;
 }
 
 export default function SolverHeader({ title, onAiClick }: Props) {
@@ -17,7 +17,7 @@ export default function SolverHeader({ title, onAiClick }: Props) {
         <header className="h-14 bg-[#1a1a1a] border-b border-[#2a2a2a] flex items-center justify-between px-4 shrink-0 font-['Satoshi',_sans-serif]">
 
             {/* --- LEFT: NAVIGATION --- */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
                 {/* Back Button */}
                 <Link
                     to="/dashboard"
@@ -27,41 +27,43 @@ export default function SolverHeader({ title, onAiClick }: Props) {
                     <ChevronLeft className="w-5 h-5" />
                 </Link>
 
-                <div className="h-5 w-px bg-[#2a2a2a]"></div>
+                <div className="h-5 w-px bg-[#2a2a2a] hidden sm:block"></div>
 
                 {/* Problem List Dropdown Trigger */}
                 <button className="flex items-center gap-2 text-sm font-medium text-slate-300 hover:text-white transition-colors group">
                     <List className="w-4 h-4 text-slate-500 group-hover:text-white transition-colors" />
-                    <span>Problem List</span>
+                    <span className="hidden sm:inline">Problem List</span>
                 </button>
 
-                {/* Optional: Current Problem Title (Truncated if long) */}
+                {/* Title (Hidden on small screens to save space) */}
                 {title && (
                     <>
-                        <div className="h-5 w-px bg-[#2a2a2a] hidden md:block"></div>
-                        <span className="text-sm font-bold text-white hidden md:block truncate max-w-[200px]">
+                        <div className="h-5 w-px bg-[#2a2a2a] hidden lg:block"></div>
+                        <span className="text-sm font-bold text-white hidden lg:block truncate max-w-[200px]">
                             {title}
                         </span>
                     </>
                 )}
             </div>
 
-            {/* --- CENTER: TIMER (Optional - Industry Standard for Contests) --- */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-full border border-[#2a2a2a]">
+            {/* --- CENTER: TIMER (Hidden on mobile) --- */}
+            <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-[#222] rounded-full border border-[#2a2a2a]">
                 <Timer className="w-3.5 h-3.5 text-slate-500" />
                 <span className="text-xs font-mono text-slate-300">00:00:00</span>
             </div>
 
             {/* --- RIGHT: TOOLS & AI --- */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
 
-                {/* ✨ AI ASSISTANT BUTTON ✨ */}
+                {/*  AI ASSISTANT BUTTON (RESPONSIVE)  */}
                 <button
                     onClick={onAiClick}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 rounded-lg transition-all group"
+                    className="flex items-center justify-center gap-2 px-2 sm:px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 rounded-lg transition-all group"
+                    title="Ask AI Coach"
                 >
                     <Sparkles className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                    <span className="text-xs font-bold">Ask AI</span>
+                    {/* Text hidden on small screens (<640px) */}
+                    <span className="text-xs font-bold hidden sm:inline">Ask AI</span>
                 </button>
 
                 {/* Divider */}
