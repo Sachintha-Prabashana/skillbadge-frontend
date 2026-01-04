@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"; // Added useEffect
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Search, Bell, ShoppingBag, LogOut, List, TrendingUp, Settings, Menu } from "lucide-react";
 import { useAuth } from "../context/authContext.tsx";
 import { useSidebar } from "../context/SidebarContext"; 
