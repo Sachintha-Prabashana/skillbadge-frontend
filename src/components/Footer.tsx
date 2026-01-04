@@ -1,71 +1,82 @@
 import { Link } from "react-router-dom";
-import { Code2, Terminal, Github, Twitter, Linkedin, Heart } from "lucide-react";
+import { Github, Twitter, Linkedin, ArrowRight } from "lucide-react";
+import Logo from "./Logo";
 
 export default function Footer() {
     return (
-        <footer className="bg-[#0e141e] border-t border-slate-800 pt-16 pb-8 font-['Satoshi',_sans-serif]">
+        <footer className="bg-[#020408] border-t border-slate-800 pt-16 pb-12 font-['Satoshi',_sans-serif] relative z-10">
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* --- MAIN FOOTER CONTENT --- */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
 
-                    {/* Column 1: Brand & Mission */}
-                    <div className="md:col-span-2 space-y-6">
+                    {/* Column 1: Brand & Socials */}
+                    <div className="space-y-6">
                         <Link to="/" className="flex items-center gap-3 group">
-                            {/* Mini Logo Match */}
-                            <div className="relative w-8 h-8 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                                <Terminal className="absolute w-4 h-4 text-indigo-200/50 top-1 left-1" />
-                                <Code2 className="absolute w-4 h-4 text-white bottom-1.5 right-1.5" />
-                            </div>
-                            <span className="text-xl font-bold text-white tracking-tight">SkillBadge</span>
+                            <Logo theme="dark" />
                         </Link>
-
-                        <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
-                            The open-source platform for developers to master algorithms, build portfolios,
-                            and prove their skills through real-world challenges.
+                        <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                            Validate skills, build portfolios, and prove mastery.
                         </p>
-
-                        {/* Social Icons */}
-                        <div className="flex gap-4">
+                        <div className="flex gap-3">
                             <SocialIcon icon={Github} href="https://github.com" label="GitHub" />
                             <SocialIcon icon={Twitter} href="https://twitter.com" label="Twitter" />
                             <SocialIcon icon={Linkedin} href="https://linkedin.com" label="LinkedIn" />
                         </div>
                     </div>
 
-                    {/* Column 2: Platform Links */}
+                    {/* Column 2: Platform */}
                     <div>
-                        <h4 className="text-white font-bold mb-6">Platform</h4>
-                        <ul className="space-y-4 text-sm text-slate-400">
-                            <li><Link to="/challenges" className="hover:text-indigo-400 transition-colors">Browse Challenges</Link></li>
-                            <li><Link to="/leaderboard" className="hover:text-indigo-400 transition-colors">Leaderboard</Link></li>
-                            <li><Link to="/pricing" className="hover:text-indigo-400 transition-colors">Pro Pricing</Link></li>
-                            <li><a href="#" className="hover:text-indigo-400 transition-colors">API Docs</a></li>
+                        <h4 className="text-white font-bold uppercase tracking-wider text-xs mb-6">Platform</h4>
+                        <ul className="space-y-3 text-sm font-medium text-slate-400">
+                            <li><Link to="/challenges" className="hover:text-white transition-colors">Challenges</Link></li>
+                            <li><Link to="/leaderboard" className="hover:text-white transition-colors">Leaderboard</Link></li>
+                            <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
                         </ul>
                     </div>
 
-                    {/* Column 3: Legal & Support */}
+                    {/* Column 3: Company */}
                     <div>
-                        <h4 className="text-white font-bold mb-6">Support</h4>
-                        <ul className="space-y-4 text-sm text-slate-400">
-                            <li><Link to="/privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
-                            <li><Link to="/terms" className="hover:text-indigo-400 transition-colors">Terms of Service</Link></li>
-                            <li><a href="mailto:support@skillbadge.com" className="hover:text-indigo-400 transition-colors">Contact Us</a></li>
-                            <li><span className="text-emerald-500 text-xs font-bold border border-emerald-500/20 bg-emerald-500/10 px-2 py-1 rounded-full">Systems Operational</span></li>
+                        <h4 className="text-white font-bold uppercase tracking-wider text-xs mb-6">Company</h4>
+                        <ul className="space-y-3 text-sm font-medium text-slate-400">
+                            <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
+                            <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
+                            <li>
+                                <span className="inline-flex items-center gap-2 text-emerald-400 text-xs font-bold border border-emerald-900/50 bg-emerald-900/20 px-2 py-1 rounded-md mt-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    Operational
+                                </span>
+                            </li>
                         </ul>
                     </div>
+
+                    {/* Column 4: CTA (NEW SIGN UP BUTTON) */}
+                    <div className="flex flex-col items-start">
+                        <h4 className="text-white font-bold uppercase tracking-wider text-xs mb-6">Get Started</h4>
+                        <p className="text-slate-400 text-sm mb-4">
+                            Ready to prove your coding skills? Join 10,000+ developers today.
+                        </p>
+                        
+                        {/* 👇 THE WHITE BUTTON (High Contrast on Black Footer) */}
+                        <Link 
+                            to="/register"
+                            className="group flex items-center gap-2 bg-white text-[#0E141E] px-5 py-3 rounded-lg text-sm font-bold uppercase tracking-wide hover:bg-slate-200 transition-all w-full md:w-auto justify-center"
+                        >
+                            Sign Up Free
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
+
                 </div>
 
                 {/* --- BOTTOM BAR --- */}
                 <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div className="text-slate-500 text-xs">
-                        © 2025 SkillBadge. Open Source & Free Forever.
+                    <div className="text-slate-500 text-xs font-bold uppercase tracking-wide">
+                        © 2025 SkillBadge.
                     </div>
-
-                    <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
-                        <span>Built with</span>
-                        <Heart className="w-3 h-3 text-rose-500 fill-rose-500 animate-pulse" />
-                        <span>by You in Sri Lanka</span>
+                    <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold uppercase tracking-wide">
+                        <span>Powered by</span>
+                        <span className="text-white">SPSolutions</span>
                     </div>
                 </div>
 
@@ -74,7 +85,7 @@ export default function Footer() {
     );
 }
 
-// Helper Component for Social Icons
+// Helper for Social Icons
 function SocialIcon({ icon: Icon, href, label }: any) {
     return (
         <a
@@ -82,9 +93,9 @@ function SocialIcon({ icon: Icon, href, label }: any) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
-            className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-indigo-600 hover:text-white transition-all hover:scale-110"
+            className="w-9 h-9 rounded-md bg-slate-900 border border-slate-700 flex items-center justify-center text-slate-400 hover:border-slate-500 hover:text-white transition-all"
         >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4" />
         </a>
     );
 }

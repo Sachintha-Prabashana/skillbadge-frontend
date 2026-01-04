@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff } from "lucide-react"
 import { register } from "../services/auth"
-import SocialLogin from "../components/SocialLogin.tsx";
+import SocialLogin from "../components/SocialLogin";
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,12 +16,11 @@ export default function Register() {
   })
   const navigate = useNavigate();
 
-  // --- BEST PRACTICE: Generic Change Handler ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
-      ...prev,       // Spread previous state so we don't lose other fields
-      [name]: value  // Dynamic key update
+      ...prev,
+      [name]: value
     }));
   };
 
@@ -29,24 +28,18 @@ export default function Register() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Now you can send 'formData' directly to your API!
-    console.log("Submitting:", formData)
-    // Simulate API call
-
-    try{
-      const data =   await register(
+    try {
+      const data = await register(
         formData.firstName,
         formData.lastName,
         formData.email,
         formData.password
       )
+      // Ideally replace this alert with useToast() like in Login.tsx
       alert("Registration successful! Please log in.")
-      console.log(data)
       navigate("/login")
       
-      // Optionally, redirect to login page
-
-    }catch(err){
+    } catch (err) {
       console.log("Registration error: ", err)
       alert("An error occurred during registration. Please try again.")
     }
@@ -54,38 +47,38 @@ export default function Register() {
   }
 
   return (
-    <div className="w-full max-w-[420px] mx-auto font-['Satoshi',_'Open_Sans',_sans-serif]">
+    <div className="w-full max-w-[420px] mx-auto font-['Satoshi',_sans-serif]">
       
       {/* --- Header --- */}
       <div className="mb-8 text-center sm:text-left">
-        <h1 className="text-[28px] font-bold text-[#0e141e] mb-2">Sign up</h1>
-        <p className="text-[15px] text-gray-600">
+        <h1 className="text-3xl font-black text-[#0E141E] mb-2 tracking-tight uppercase">Create Account</h1>
+        <p className="text-sm font-medium text-slate-500">
           Already have an account?{" "}
-          <Link to="/login" className="font-bold text-indigo-600 hover:underline">
+          <Link to="/login" className="font-bold text-[#0E141E] hover:underline transition-all">
             Log in
           </Link>
         </p>
       </div>
 
-      {/* --- Form Section (First) --- */}
+      {/* --- Form Section --- */}
       <form onSubmit={handleRegister} className="space-y-5">
         
         {/* Name Row */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-[14px] font-bold text-[#0e141e] mb-2">First Name</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">First Name</label>
             <input
               type="text"
-              name="firstName"// <--- MUST MATCH state key
-              value={formData.firstName}// <--- Controlled input
-              onChange={handleChange}// <--- Generic handler
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
               placeholder="John"
               required
-              className="w-full h-11 px-3 bg-white border border-[#b7c0cd] rounded text-[14px] text-[#0e141e] placeholder:text-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all"
+              className="w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#0E141E] placeholder:text-slate-400 focus:outline-none focus:border-[#0E141E] focus:ring-1 focus:ring-[#0E141E] transition-all"
             />
           </div>
           <div>
-            <label className="block text-[14px] font-bold text-[#0e141e] mb-2">Last Name</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Last Name</label>
             <input
               type="text"
               name="lastName"
@@ -93,81 +86,80 @@ export default function Register() {
               onChange={handleChange}
               placeholder="Doe"
               required
-              className="w-full h-11 px-3 bg-white border border-[#b7c0cd] rounded text-[14px] text-[#0e141e] placeholder:text-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all"
+              className="w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#0E141E] placeholder:text-slate-400 focus:outline-none focus:border-[#0E141E] focus:ring-1 focus:ring-[#0E141E] transition-all"
             />
           </div>
         </div>
 
         {/* Email */}
         <div>
-          <label className="block text-[14px] font-bold text-[#0e141e] mb-2">Email</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Email Address</label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            placeholder="Your email"
+            placeholder="name@company.com"
             required
-            className="w-full h-11 px-3 bg-white border border-[#b7c0cd] rounded text-[14px] text-[#0e141e] placeholder:text-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all"
+            className="w-full h-12 px-4 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#0E141E] placeholder:text-slate-400 focus:outline-none focus:border-[#0E141E] focus:ring-1 focus:ring-[#0E141E] transition-all"
           />
         </div>
 
         {/* Password */}
         <div>
-          <label className="block text-[14px] font-bold text-[#0e141e] mb-2">Password</label>
-          <div className="relative">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">Password</label>
+          <div className="relative group">
             <input
               type={showPassword ? "text" : "password"}
               name="password"
               value={formData.password}
-              onChange={handleChange}// <--- Generic handler
-              placeholder="Your password"
+              onChange={handleChange}
+              placeholder="Create a password"
               required
-              className="w-full h-11 px-3 pr-10 bg-white border border-[#b7c0cd] rounded text-[14px] text-[#0e141e] placeholder:text-gray-400 focus:outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all"
+              className="w-full h-12 px-4 pr-10 bg-white border border-slate-300 rounded-lg text-sm font-medium text-[#0E141E] placeholder:text-slate-400 focus:outline-none focus:border-[#0E141E] focus:ring-1 focus:ring-[#0E141E] transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-[#0E141E] cursor-pointer transition-colors"
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-          <p className="mt-2 text-[12px] text-gray-500">
+          <p className="mt-2 text-xs font-medium text-slate-400">
             Must be at least 8 characters long.
           </p>
         </div>
 
-        {/* Submit Button */}
+        {/* Submit Button (BLACK) */}
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded text-[14px] transition-all shadow-sm"
+          className="w-full h-12 bg-[#0E141E] hover:bg-slate-800 text-white font-bold rounded-lg text-sm tracking-wide transition-all shadow-lg shadow-slate-900/10 disabled:opacity-70 disabled:cursor-not-allowed uppercase"
         >
-          {isLoading ? "Creating account..." : "Create an account"}
+          {isLoading ? "Creating account..." : "Create Account"}
         </button>
       </form>
 
       {/* --- Divider --- */}
       <div className="relative my-8">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-[#dce1e9]"></div>
+          <div className="w-full border-t border-slate-200"></div>
         </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="px-3 bg-white text-gray-500 font-medium">OR</span>
+        <div className="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+          <span className="px-3 bg-white text-slate-400">Or join with</span>
         </div>
       </div>
 
       {/* --- Social Login (Bottom) --- */}
-        <SocialLogin mode="register" />
+      <SocialLogin mode="register" />
 
       {/* Footer Text */}
-      <div className="mt-6 text-center text-[13px] text-gray-500">
+      <div className="mt-6 text-center text-xs text-slate-500 font-medium">
         By signing up, you agree to the 
-        <a href="#" className="text-indigo-600 hover:underline"> Terms of Service</a> and 
-        <a href="#" className="text-indigo-600 hover:underline"> Privacy Policy</a>.
+        <a href="#" className="text-[#0E141E] hover:underline ml-1"> Terms of Service</a> and 
+        <a href="#" className="text-[#0E141E] hover:underline ml-1"> Privacy Policy</a>.
       </div>
     </div>
   )
-
 }
