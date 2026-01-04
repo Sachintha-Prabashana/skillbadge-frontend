@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
-    CheckCircle2, Search, Filter, Zap, 
-    ArrowUpRight, Loader2, Calendar, ChevronLeft, ChevronRight, MoreHorizontal
+    CheckCircle2, Search, Zap, 
+    ArrowUpRight, Loader2, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { fetchMySolvedChallenges } from "../services/user";
 
