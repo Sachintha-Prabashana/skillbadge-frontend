@@ -49,6 +49,7 @@ api.interceptors.response.use(
                 originalRequest.headers.Authorization = `Bearer ${data.data.accessToken}`
                 return axios(originalRequest)
             } catch (refreshErr) {
+                console.error("Session expired. Redirecting to login...", refreshErr);
                 localStorage.removeItem("accessToken")
                 localStorage.removeItem("refreshToken")
                 window.location.href = "/login"
