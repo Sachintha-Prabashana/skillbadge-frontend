@@ -5,7 +5,7 @@ export interface ChallengeData {
     _id: string;
     title: string;
     difficulty: "EASY" | "MEDIUM" | "HARD";
-    category: string;
+    categories: string;
     points: number;
     slug: string;
     description?: string; // Optional in list view

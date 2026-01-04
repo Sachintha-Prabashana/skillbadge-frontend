@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"; // Added useEffect
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Bell, ShoppingBag, LogOut, List, TrendingUp, Settings, Menu } from "lucide-react";
 import { useAuth } from "../context/authContext.tsx";
 import { useSidebar } from "../context/SidebarContext"; 
@@ -32,6 +32,15 @@ export default function Header() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
+
+    // 2. Create a handler to manage the logout process
+    const handleLogout = () => {
+        setIsDropdownOpen(false);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        
+        window.location.href = "/login";
+    };
 
     return (
         <header className="h-16 bg-[#121212] border-b border-[#2a2a2a] flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 font-['Satoshi',_sans-serif]">
@@ -138,7 +147,9 @@ export default function Header() {
 
                             {/* Footer */}
                             <div className="p-2 border-t border-[#2a2a2a]">
-                                <button className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
+                                <button 
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
                                     <LogOut className="w-4 h-4" /> Sign Out
                                 </button>
                             </div>

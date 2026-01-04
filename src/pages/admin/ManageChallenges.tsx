@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { fetchChallenges, deleteChallenge, type ChallengeData } from "../../services/admin/admin.challenge.ts";
 import { useToast } from "../../context/ToastContext";
-import { Link } from "react-router-dom"; // Assuming you use router
+import { Link } from "react-router-dom";
 
 export default function AdminChallenges() {
     const { showToast } = useToast();
@@ -25,7 +25,6 @@ export default function AdminChallenges() {
 
     // --- EFFECT: Load Data ---
     useEffect(() => {
-        // Debounce search to avoid spamming API
         const timer = setTimeout(() => {
             loadData();
         }, 500);
@@ -36,7 +35,6 @@ export default function AdminChallenges() {
         setLoading(true);
         try {
             const res = await fetchChallenges(page, search, difficulty);
-            console.log(res)
             setChallenges(res.data);
             setTotalPages(res.pagination.totalPages);
             setTotalItems(res.pagination.total);
@@ -54,7 +52,7 @@ export default function AdminChallenges() {
         try {
             await deleteChallenge(id);
             showToast("Challenge deleted successfully", "success");
-            loadData(); // Reload table
+            loadData();
         } catch (error) {
             showToast("Failed to delete challenge", "error");
         }
@@ -122,59 +120,74 @@ export default function AdminChallenges() {
                     </div>
                 ) : (
                     <>
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                            <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                                <th className="p-4 pl-6">Title</th>
-                                <th className="p-4">Difficulty</th>
-                                <th className="p-4">Category</th>
-                                <th className="p-4">Points</th>
-                                <th className="p-4 text-right pr-6">Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                            {challenges.map((challenge) => (
-                                <tr key={challenge._id} className="hover:bg-slate-50/50 transition-colors group">
-                                    <td className="p-4 pl-6">
-                                        <div className="font-bold text-slate-900">{challenge.title}</div>
-                                    </td>
-                                    <td className="p-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${
-                                                challenge.difficulty === 'EASY' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                    challenge.difficulty === 'MEDIUM' ? 'bg-orange-50 text-orange-600 border-orange-100' :
-                                                        'bg-red-50 text-red-600 border-red-100'
-                                            }`}>
-                                                {challenge.difficulty}
-                                            </span>
-                                    </td>
-                                    <td className="p-4">
-                                            <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200">
-                                                {challenge.category}
-                                            </span>
-                                    </td>
-                                    <td className="p-4 text-sm font-bold text-slate-700">
-                                        {challenge.points} XP
-                                    </td>
-                                    <td className="p-4 text-right pr-6">
-                                        <div className="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                            <Link
-                                                to={`/admin/challenges/edit/${challenge._id}`}
-                                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                            >
-                                                <Edit className="w-4 h-4" />
-                                            </Link>
-                                            <button
-                                                onClick={() => handleDelete(challenge._id)}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                        {/* ✅ FIX: Wrapper starts here and encloses the table */}
+                        <div className="overflow-x-auto w-full">
+                            {/* ✅ FIX: Added min-w-[800px] to force scroll on small screens */}
+                            <table className="w-full min-w-[800px] text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                                        <th className="p-4 pl-6">Title</th>
+                                        <th className="p-4">Difficulty</th>
+                                        <th className="p-4">Category</th>
+                                        <th className="p-4">Points</th>
+                                        <th className="p-4 text-right pr-6">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {challenges.map((challenge) => (
+                                        <tr key={challenge._id} className="hover:bg-slate-50/50 transition-colors group">
+                                            <td className="p-4 pl-6">
+                                                <div className="font-bold text-slate-500">{challenge.title}</div>
+                                            </td>
+                                            <td className="p-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${challenge.difficulty === 'EASY' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                        challenge.difficulty === 'MEDIUM' ? 'bg-orange-50 text-orange-600 border-orange-100' :
+                                                            'bg-red-50 text-red-600 border-red-100'
+                                                    }`}>
+                                                    {challenge.difficulty}
+                                                </span>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {Array.isArray(challenge.categories) && challenge.categories.length > 0 ? (
+                                                        challenge.categories.map((cat, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded border border-slate-200"
+                                                            >
+                                                                {cat}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-slate-400 text-xs italic">No category</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-sm font-bold text-slate-700">
+                                                {challenge.points} XP
+                                            </td>
+                                            <td className="p-4 text-right pr-6">
+                                                <div className="flex justify-end gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                                                    <Link
+                                                        to={`/admin/challenges/edit/${challenge._id}`}
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(challenge._id)}
+                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        {/* ✅ FIX: Wrapper ends here */}
 
                         {/* Pagination Footer */}
                         <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 bg-slate-50/50">
