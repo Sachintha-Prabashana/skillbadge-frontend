@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
-    CheckCircle2, Search, Filter, Zap, 
+    CheckCircle2, Search, 
     ArrowUpRight, Loader2, Sparkles, Trophy
 } from "lucide-react";
 import { fetchMySolvedChallenges } from "../services/user"; // Ensure correct import path
