@@ -134,7 +134,7 @@ export default function MySolvedList() {
                     {/* === 3. MODERN GRID CARD LAYOUT === */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {filteredChallenges.length > 0 ? (
-                            filteredChallenges.map((challenge, index) => (
+                            filteredChallenges.map((challenge) => (
                                 <Link 
                                     key={challenge._id}
                                     to={`/challenges/${challenge._id}`}
