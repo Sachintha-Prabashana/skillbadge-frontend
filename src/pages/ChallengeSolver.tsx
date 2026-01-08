@@ -28,7 +28,7 @@ export default function ChallengeSolver() {
     const [consoleTab, setConsoleTab] = useState("testcase");
     const [isRunning, setIsRunning] = useState(false);
     
-    // 🔥 NEW: Mobile Tab State (Problem vs Code)
+    //  NEW: Mobile Tab State (Problem vs Code)
     const [mobileTab, setMobileTab] = useState<"problem" | "code">("problem");
 
     // --- Execution Result States ---
@@ -283,16 +283,58 @@ export default function ChallengeSolver() {
                                             <div className={`text-sm font-bold ${overallStatus === "PASSED" ? "text-emerald-500" : "text-red-500"}`}>
                                                 {overallStatus === "PASSED" ? "Accepted" : "Wrong Answer"}
                                             </div>
-                                            <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-col gap-3 pb-20"> {/* Added pb-20 so last item isn't hidden behind buttons */}
                                                 {testResults.map((res, i) => (
-                                                    <div key={i} className={`p-2 rounded min-w-[80px] ${res.passed ? "bg-[#3e3e3e]" : "bg-red-500/10 border border-red-500/20"}`}>
-                                                        <div className="flex justify-between mb-1">
-                                                            <span className="text-slate-400 text-[10px]">Case {i + 1}</span>
-                                                            <span className={`text-[10px] font-bold ${res.passed ? "text-emerald-400" : "text-red-400"}`}>{res.passed ? "Pass" : "Fail"}</span>
+                                                    <div 
+                                                        key={i} 
+                                                        className={`p-3 rounded-lg border ${
+                                                            res.passed 
+                                                            ? "bg-[#3e3e3e] border-[#3e3e3e]" 
+                                                            : "bg-red-500/10 border-red-500/20"
+                                                        }`}
+                                                    >
+                                                        {/* 1. Header Row */}
+                                                        <div className="flex justify-between items-center mb-2">
+                                                            <span className="text-slate-400 text-xs font-bold">Case {i + 1}</span>
+                                                            <span className={`text-xs font-bold uppercase ${res.passed ? "text-emerald-400" : "text-red-400"}`}>
+                                                                {res.passed ? "Passed" : "Failed"}
+                                                            </span>
                                                         </div>
+
+                                                        {/* 2. Error Details (Only if failed) */}
+                                                        {!res.passed && (
+                                                            <div className="mt-2 pt-2 border-t border-red-500/20 space-y-2 text-xs font-mono">
+                                                                
+                                                                {/* Input */}
+                                                                <div>
+                                                                    <span className="text-slate-500 block mb-0.5">Input:</span>
+                                                                    <div className="bg-[#1a1a1a] p-2 rounded text-slate-300 break-all whitespace-pre-wrap">
+                                                                        {res.input !== undefined ? String(res.input) : "Hidden"}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Your Output */}
+                                                                <div>
+                                                                    <span className="text-slate-500 block mb-0.5">Your Output:</span>
+                                                                    <div className="bg-[#1a1a1a] p-2 rounded text-red-300 break-all whitespace-pre-wrap">
+                                                                        {/* Handle potentially empty strings explicitly */}
+                                                                        {res.actualOutput === "" ? <span className="italic opacity-50">Empty String</span> : String(res.actualOutput)}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Expected Output */}
+                                                                <div>
+                                                                    <span className="text-slate-500 block mb-0.5">Expected:</span>
+                                                                    <div className="bg-[#1a1a1a] p-2 rounded text-emerald-300 break-all whitespace-pre-wrap">
+                                                                        {String(res.expectedOutput)}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 ))}
                                             </div>
+                                           
                                         </div>
                                     ) : (
                                         <div className="text-slate-500 text-center mt-4">Run code to see results</div>
