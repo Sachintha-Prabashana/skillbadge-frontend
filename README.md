@@ -8,7 +8,8 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4+-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-[🚀 Live Demo](https://your-demo-link.com) | [📖 Documentation](https://your-docs-link.com) | [🐛 Report Bug](https://github.com/your-repo/issues) | [✨ Request Feature](https://github.com/your-repo/issues)
+| **Frontend** | 🟢 **Live** | [**Click here to visit App**](https://skillbadge-frontend.vercel.app) | Vercel |
+| **Backend API** | 🟢 **Live** | [**Visit API Health**](https://github.com/Sachintha-Prabashana/skillbadge-backend.git) | Koyeb |
 
 ---
 
