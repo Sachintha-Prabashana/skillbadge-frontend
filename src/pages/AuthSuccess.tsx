@@ -25,7 +25,7 @@ export default function AuthSuccess() {
                 await refreshUser();
 
                 // 4. Redirect to Dashboard
-                // 👇 ADD THIS TIMER for debugging
+                //  ADD THIS TIMER for debugging
                 setTimeout(() => {
                     navigate("/dashboard", { replace: true });
                 }, 3000); // Wait 3 seconds before moving

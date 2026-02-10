@@ -29,6 +29,7 @@ const PostDetails = lazy(() => import("../pages/PostDetails.tsx"));
 const ForgotPassword = lazy(() => import("../pages/ForgotPassword.tsx"));
 const ResetPassword = lazy(() => import("../pages/ResetPassword.tsx"));
 const MyLists = lazy(() => import("../pages/MyLists.tsx"));
+const Interview = lazy(() => import("../pages/MockInterview.tsx"));
 
 // login ekai register ekai wenvd kiyl mulin blnne . layout header onna
 export default function Router() {
@@ -84,6 +85,7 @@ export default function Router() {
             <Route path="/auth-success" element={<AuthSuccess />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/interview" element={<Interview />} />
 
 
 

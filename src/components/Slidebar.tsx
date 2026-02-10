@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Trophy, MessageSquare, Settings, LogOut, Zap, X } from "lucide-react";
+import {LayoutDashboard, Trophy, MessageSquare, Settings, LogOut, Zap, X, Briefcase} from "lucide-react";
 import { logout } from "../services/auth";
 import { useAuth } from "../context/authContext";
 import { useSidebar } from "../context/SidebarContext";
@@ -15,6 +15,12 @@ export default function Sidebar() {
             title: "MENU",
             items: [
                 { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" }
+            ]
+        },
+        {
+            title: "PRACTICE",
+            items: [
+                { icon: Briefcase, label: "Mock Interview", path: "/interview" }
             ]
         },
         {
