@@ -316,8 +316,8 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/skill-badge-platform-frontend.git
-cd skill-badge-platform-frontend
+git clone https://github.com/Sachintha-Prabashana/skillbadge-frontend.git
+cd skillbadge-frontend
 ```
 
 ### 2. Install Dependencies
