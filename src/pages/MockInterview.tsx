@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "regenerator-runtime/runtime";
-import {ArrowLeft, Volume2, VolumeX, Loader2, CheckCircle2} from "lucide-react";
+import { ArrowLeft, Volume2, VolumeX, Loader2, CheckCircle2 } from "lucide-react";
 
 // Components
 import InterviewSetup from "../components/InterviewSetup";
@@ -17,23 +17,42 @@ interface Message {
 }
 
 export default function MockInterview() {
+    // --- STATES ---
     const [step, setStep] = useState<"SETUP" | "CHAT">("SETUP");
     const [stream, setStream] = useState("React.js");
     const [difficulty, setDifficulty] = useState("Intermediate");
 
-    const [questionCount, setQuestionCount] = useState(1);
-    const [totalQuestions, setTotalQuestions] = useState(10);
-    const [isCompleted, setIsCompleted] = useState(false);
-
     const [interviewId, setInterviewId] = useState<string | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
+
+    // Progress States
+    const [questionCount, setQuestionCount] = useState(1);
+    const [totalQuestions, setTotalQuestions] = useState(10);
+    const [isCompleted, setIsCompleted] = useState(false);
 
     // Voice Settings
     const [soundEnabled, setSoundEnabled] = useState(true);
     const { speak, stop } = useTextToSpeech(soundEnabled);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Reset Function: Clears all session data
+    const resetInterview = () => {
+        stop(); // Stop any ongoing speech
+        setStep("SETUP");
+        setMessages([]);
+        setInterviewId(null);
+        setIsCompleted(false);
+        setQuestionCount(1);
+        setTotalQuestions(10);
+        setLoading(false);
+    };
+
+    // Reset on Mount (Fixes the issue of old data persisting)
+    useEffect(() => {
+        resetInterview();
+    }, []);
 
     // Auto-scroll
     useEffect(() => {
@@ -51,8 +70,14 @@ export default function MockInterview() {
     }, [messages, step, speak]);
 
     // --- HANDLERS ---
+
     const handleStart = async () => {
         setLoading(true);
+        // Ensure clean state before starting
+        setIsCompleted(false);
+        setQuestionCount(1);
+        setMessages([]);
+
         try {
             const data = await startMockInterview(stream, difficulty);
             setInterviewId(data.interviewId);
@@ -73,31 +98,33 @@ export default function MockInterview() {
         setLoading(true);
 
         try {
+            // Send reply to backend
             const data = await sendInterviewReply(interviewId, userMsg, false);
             setMessages(prev => [...prev, { role: "assistant", content: data.message }]);
 
-            // update progress from be
-            if (data.currentQuestion) setQuestionCount(data.currentQuestion);
-            console.log("current question " + data.currentQuestion );
-
-            if (data.totalQuestions) setTotalQuestions(data.totalQuestions);
-            console.log("current question " + data.totalQuestions );
-
-            // check if interview is completed
-            if (data.isCompleted) {
-                setIsCompleted(true);
-                stop(); // Stop voice (optional)
+            // Update Progress
+            if (data.currentQuestion) {
+                setQuestionCount(data.currentQuestion);
+                console.log("Current Question:", data.currentQuestion);
             }
 
+            if (data.totalQuestions) {
+                setTotalQuestions(data.totalQuestions);
+            }
+
+            // Check Completion
+            if (data.isCompleted) {
+                setIsCompleted(true);
+                stop();
+            }
 
         } catch (error) {
-            console.error(error);
+            console.error("Error sending reply:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    // 3. Manual Stop (End Session Button)
     const handleManualStop = async () => {
         if (!interviewId || isCompleted) return;
 
@@ -113,6 +140,7 @@ export default function MockInterview() {
             // Show Final Report
             setMessages(prev => [...prev, { role: "assistant", content: data.message }]);
             setIsCompleted(true);
+            setQuestionCount(totalQuestions); // Max out progress bar
 
         } catch (error) {
             console.error("Failed to stop session:", error);
@@ -141,25 +169,33 @@ export default function MockInterview() {
             {/* Header */}
             <header className="h-16 border-b border-[#262626] bg-[#0a0a0a]/80 backdrop-blur-md flex items-center justify-between px-4 md:px-8 shrink-0 z-10 sticky top-0">
                 <div className="flex items-center gap-4">
+                    {/* Back Button calls Reset */}
                     <button
-                        onClick={() => setStep("SETUP")}
+                        onClick={resetInterview}
                         className="text-zinc-400 hover:text-white transition-colors p-2 hover:bg-[#1a1a1a] rounded-lg"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
                     <div>
                         <h3 className="font-bold text-sm md:text-base text-white tracking-tight">{stream} Interview</h3>
-                        <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
-                            <span className="relative flex h-2 w-2">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                        {/* Dynamic Status Label */}
+                        {isCompleted ? (
+                            <span className="text-[10px] text-green-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <CheckCircle2 className="w-3 h-3" /> Completed
                             </span>
-                            Live Session
-                        </span>
+                        ) : (
+                            <span className="text-[10px] text-orange-500 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                <span className="relative flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                </span>
+                                Live Session
+                            </span>
+                        )}
                     </div>
                 </div>
 
-                {/*  Progress Bar (Only show if active) */}
+                {/* Progress Bar (Only show if not completed) */}
                 {!isCompleted && (
                     <div className="hidden md:flex flex-col items-end mr-4">
                          <span className="text-[10px] font-mono text-zinc-500 mb-1">
@@ -191,7 +227,7 @@ export default function MockInterview() {
                         {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                     </button>
 
-                    {/*  "End Session" calls handleManualStop */}
+                    {/* End Session Button */}
                     {!isCompleted && (
                         <button
                             onClick={handleManualStop}
@@ -209,7 +245,6 @@ export default function MockInterview() {
                     <MessageBubble key={idx} role={msg.role} content={msg.content} />
                 ))}
 
-                {/* Loading Indicator (The "Thinking" Bubble) */}
                 {loading && (
                     <div className="flex gap-4 animate-in fade-in duration-300">
                         <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
@@ -226,7 +261,7 @@ export default function MockInterview() {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area Logic: Show Input OR Completion Screen */}
+            {/* Completion Screen OR Input Area */}
             {isCompleted ? (
                 <div className="p-8 bg-[#0a0a0a] border-t border-[#262626] flex flex-col items-center text-center animate-in slide-in-from-bottom-10">
                     <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mb-4 border border-green-500/20">
@@ -236,8 +271,9 @@ export default function MockInterview() {
                     <p className="text-zinc-400 text-sm mb-6 max-w-md">
                         Great job! The AI has generated a final report. Review the feedback above to identify your strengths and areas for improvement.
                     </p>
+                    {/* Calls Reset Function to start fresh */}
                     <button
-                        onClick={() => setStep("SETUP")}
+                        onClick={resetInterview}
                         className="bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-zinc-200 transition-colors shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                     >
                         Start New Interview
